@@ -12,8 +12,8 @@ function adicionarLinha() {
 
   // Verifica se o nome é válido
   if (novoNome.trim() === "") {
-    alert("Por favor, insira um nome válido.");
-    return;
+      alert("Por favor, insira um nome válido.");
+      return;
   }
 
   nomes.push({ nome: novoNome, pontos: 100, eliminado: false });
@@ -29,7 +29,8 @@ function adicionarLinha() {
   celulaNome.innerHTML = novoNome;
 
   // Adiciona um campo de entrada para editar os resultados na Rodada 1
-  celulaRodada1.innerHTML = '<input type="text" class="resultadoInput" value="100" />';
+  celulaRodada1.innerHTML =
+      '<input type="text" class="resultadoInput" value="100" />';
 
   // Limpa o campo de entrada
   document.getElementById("novoNome").value = "";
@@ -42,49 +43,92 @@ function adicionarRodada() {
   // Atualiza o cabeçalho da tabela com as novas colunas de rodadas
   var cabecalho = tabela.rows[0];
   var novaColuna = cabecalho.insertCell(-1);
-  novaColuna.innerHTML = 'Rodada ' + numRodadas;
+  novaColuna.innerHTML = "Rodada " + numRodadas;
 
   // Para cada jogador, pergunte quantos pontos foram perdidos
   for (var i = 0; i < nomes.length; i++) {
-    var jogador = nomes[i];
+      var jogador = nomes[i];
 
-    // Se o jogador já foi eliminado, continue para o próximo
-    if (jogador.eliminado) {
-      continue;
-    }
+      // Se o jogador já foi eliminado, continue para o próximo
+      if (jogador.eliminado) {
+          continue;
+      }
 
-    var pontosAnteriores = jogador.pontos;
+      var pontosAnteriores = jogador.pontos;
 
-    // Se o jogador já atingiu 0 pontos ou menos, elimina automaticamente
-    if (pontosAnteriores <= 0) {
-      jogador.eliminado = true;
-      continue;
-    }
+      // Se o jogador já atingiu 0 pontos ou menos, elimina automaticamente
+      if (pontosAnteriores <= 0) {
+          jogador.eliminado = true;
+          continue;
+      }
 
-    // Pede ao usuário que insira os pontos perdidos pelo jogador
-    var mensagem = 'Quantos pontos ' + jogador.nome + ' perdeu na Rodada ' + (numRodadas - 1) + '? (Pontuação atual de ' + jogador.nome + ': ' + pontosAnteriores + ')';
-    var pontosPerdidos = parseInt(prompt(mensagem)) || 0;
+      // Pede ao usuário que insira os pontos perdidos pelo jogador
+      var mensagem =
+          "Quantos pontos " +
+          jogador.nome +
+          " perdeu na Rodada " +
+          (numRodadas - 1) +
+          "? (Pontuação atual de " +
+          jogador.nome +
+          ": " +
+          pontosAnteriores +
+          ")";
+      var pontosPerdidos = parseInt(prompt(mensagem)) || 0;
 
-    // Subtrai os pontos perdidos dos pontos anteriores
-    var pontosAtualizados = Math.max(0, pontosAnteriores - pontosPerdidos);
+      // Subtrai os pontos perdidos dos pontos anteriores
+      var pontosAtualizados = Math.max(0, pontosAnteriores - pontosPerdidos);
 
-    // Atualiza os pontos do jogador
-    jogador.pontos = pontosAtualizados;
+      // Atualiza os pontos do jogador
+      jogador.pontos = pontosAtualizados;
 
-    // Adiciona um campo de entrada para os resultados na nova rodada
-    var celula = tabela.rows[i + 1].insertCell(-1);
-    celula.innerHTML = '<input type="text" class="resultadoInput" value="' + pontosAtualizados + '" />';
+      // Adiciona um campo de entrada para os resultados na nova rodada
+      var celula = tabela.rows[i + 1].insertCell(-1);
+      celula.innerHTML =
+          '<input type="text" class="resultadoInput" value="' +
+          pontosAtualizados +
+          '" />';
   }
 }
 
 // Adiciona um ouvinte de evento para atualizar os resultados quando o campo de entrada for editado
-tabela.addEventListener('input', function (event) {
+tabela.addEventListener("input", function (event) {
   var elemento = event.target;
-  if (elemento.classList.contains('resultadoInput')) {
-    var linha = elemento.closest('tr');
-    var nome = linha.cells[0].innerHTML;
-    var resultado = elemento.value;
-    var rodada = linha.cells.length - 2; // A coluna "Nome" e a coluna "Rodada 1" estão presentes inicialmente
-    console.log('Nome: ' + nome + ', Resultado Rodada ' + rodada + ': ' + resultado);
+  if (elemento.classList.contains("resultadoInput")) {
+      var linha = elemento.closest("tr");
+      var nome = linha.cells[0].innerHTML;
+      var resultado = elemento.value;
+      var rodada = linha.cells.length - 2; // A coluna "Nome" e a coluna "Rodada 1" estão presentes inicialmente
+      console.log(
+          "Nome: " + nome + ", Resultado Rodada " + rodada + ": " + resultado
+      );
   }
 });
+
+// Função para resetar todos os pontos para 100 com confirmação
+function resetarPontos() {
+  // Pede confirmação ao usuário
+  var confirmacao = confirm('Tem certeza de que deseja resetar os pontos para todos os jogadores?');
+
+  if (confirmacao) {
+    // Itera sobre a lista de nomes e redefine os pontos para 100
+    for (var i = 0; i < nomes.length; i++) {
+      nomes[i].pontos = 100;
+    }
+
+    // Reinicia o número de rodadas para 1
+    numRodadas = 1;
+
+    // Remove todas as colunas de rodadas extras
+    var numColunas = tabela.rows[0].cells.length;
+    for (var j = numColunas - 1; j > 1; j--) {
+      for (var k = 0; k < tabela.rows.length; k++) {
+        tabela.rows[k].deleteCell(j);
+      }
+    }
+
+    // Exibe mensagem informativa
+    alert('Pontos resetados para 100 em todas as rodadas.');
+  } else {
+    alert('Reset de pontos cancelado.');
+  }
+}

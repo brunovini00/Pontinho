@@ -57,4 +57,9 @@ button {
     cursor: pointer;
     width: 100%;
     margin: 5px 0px;
+    border-radius: 10px;
+}
+
+#resetar {
+    background-color: #ff0000;
 }
