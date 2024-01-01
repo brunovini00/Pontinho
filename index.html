@@ -2,10 +2,11 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />\
-        <link rel="stylesheet" href="CSS/reset.css">
-        <link rel="stylesheet" href="CSS/style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="CSS/reset.css" />
+        <link rel="stylesheet" href="CSS/style.css" />
         <title>Tabela de Rodadas</title>
+        <style></style>
     </head>
     <body>
         <header>
@@ -13,6 +14,11 @@
         </header>
 
         <main>
+            <label for="novoNome">Novo Jogador:</label>
+            <input type="text" id="novoNome" />
+            <button onclick="adicionarLinha()">Adicionar Linha</button>
+            <button onclick="adicionarRodada()">Adicionar Rodada</button>
+
             <table id="tabelaRodadas">
                 <thead>
                     <tr>
@@ -24,14 +30,8 @@
                     <!-- Linhas da tabela serão adicionadas dinamicamente aqui -->
                 </tbody>
             </table>
-
-            <label for="novoNome">Novo Nome:</label>
-            <input type="text" id="novoNome" />
-            <button onclick="adicionarLinha()">Adicionar Linha</button>
-            <button onclick="adicionarRodada()">Adicionar Rodada</button>
         </main>
 
         <script src="script.js"></script>
-
     </body>
 </html>
