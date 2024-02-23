@@ -1,6 +1,6 @@
 // Array de nomes (pode ser obtido de uma fonte dinâmica, como um formulário)
 var nomes = [];
-var numRodadas = 1; // Contador de rodadas
+var numRodadas = 0; // Contador de rodadas
 
 // Obtém a referência da tabela e do corpo da tabela
 var tabela = document.getElementById("tabelaRodadas");
@@ -36,59 +36,125 @@ function adicionarLinha() {
   document.getElementById("novoNome").value = "";
 }
 
+/// ... (seu código existente)
+
+// Variável para verificar se a primeira rodada foi adicionada
+var primeiraRodadaAdicionada = false;
+
 // Adiciona uma nova rodada para cada participante na tabela
 function adicionarRodada() {
+  // Verifica se há pelo menos um jogador na tabela
+  if (nomes.length === 0) {
+    exibirPopup("Adicione pelo menos um jogador antes de adicionar rodadas.");
+    return;
+  }
+
   numRodadas++;
+
+  // Desabilita o botão de adicionar jogadores após a primeira rodada
+  if (!primeiraRodadaAdicionada) {
+    document.getElementById("novoNome").readOnly = true;
+    document.querySelector('button[onclick="adicionarLinha()"]').hidden = true;
+    primeiraRodadaAdicionada = true;
+  }
 
   // Atualiza o cabeçalho da tabela com as novas colunas de rodadas
   var cabecalho = tabela.rows[0];
-  var novaColuna = cabecalho.insertCell(-1);
-  novaColuna.innerHTML = "Rodada " + numRodadas;
 
-  // Para cada jogador, pergunte quantos pontos foram perdidos
+  // Modifica para criar um elemento 'th' em vez de 'td'
+  var th = document.createElement('th');
+  th.innerHTML = "Rodada " + numRodadas;
+
+// Adiciona o novo elemento 'th' à linha de cabeçalho
+cabecalho.appendChild(th);
+
+  var indiceVencedor = -1;
+
   for (var i = 0; i < nomes.length; i++) {
-      var jogador = nomes[i];
+    var jogador = nomes[i];
 
-      // Se o jogador já foi eliminado, continue para o próximo
-      if (jogador.eliminado) {
-          continue;
-      }
+    // Se o jogador já foi eliminado, continue para o próximo
+    if (jogador.eliminado) {
+      continue;
+    }
 
-      var pontosAnteriores = jogador.pontos;
+    var pontosAnteriores = jogador.pontos;
 
-      // Se o jogador já atingiu 0 pontos ou menos, elimina automaticamente
-      if (pontosAnteriores <= 0) {
-          jogador.eliminado = true;
-          continue;
-      }
+    // Se o jogador já atingiu 0 pontos ou menos, elimina automaticamente
+    if (pontosAnteriores <= 0) {
+      jogador.eliminado = true;
+      jogador.pontos = 0; // Garante que a pontuação seja 0 se já foi eliminado
 
-      // Pede ao usuário que insira os pontos perdidos pelo jogador
-      var mensagem =
-          "Quantos pontos " +
-          jogador.nome +
-          " perdeu na Rodada " +
-          (numRodadas - 1) +
-          "? (Pontuação atual de " +
-          jogador.nome +
-          ": " +
-          pontosAnteriores +
-          ")";
-      var pontosPerdidos = parseInt(prompt(mensagem)) || 0;
+      // Estilize o nome e os pontos do jogador eliminado (adicione uma classe no CSS)
+      tabela.rows[i + 1].cells[0].classList.add('eliminado');
+      tabela.rows[i + 1].cells[tabela.rows[i + 1].cells.length - 1].classList.add('eliminado');
 
-      // Subtrai os pontos perdidos dos pontos anteriores
-      var pontosAtualizados = Math.max(0, pontosAnteriores - pontosPerdidos);
+      continue;
+    }
 
-      // Atualiza os pontos do jogador
-      jogador.pontos = pontosAtualizados;
+    // Se o jogador não foi eliminado, pergunte sobre a pontuação
+    // e adicione a pontuação na célula correspondente
+    var mensagem =
+      "Quantos pontos " +
+      jogador.nome +
+      " perdeu na Rodada " +
+      numRodadas +
+      "? (Pontuação atual de " +
+      jogador.nome +
+      ": " +
+      pontosAnteriores +
+      ")";
+    var pontosPerdidos = parseInt(prompt(mensagem)) || 0;
 
-      // Adiciona um campo de entrada para os resultados na nova rodada
-      var celula = tabela.rows[i + 1].insertCell(-1);
-      celula.innerHTML =
+    // Subtrai os pontos perdidos dos pontos anteriores
+    var pontosAtualizados = Math.max(0, pontosAnteriores - pontosPerdidos);
+
+    // Atualiza os pontos do jogador
+    jogador.pontos = pontosAtualizados;
+
+    // Adiciona um campo de entrada para os resultados na nova rodada
+    var celula = tabela.rows[i + 1].insertCell(-1);
+
+    // Se o jogador não tem pontos, não pergunte mais
+    if (jogador.pontos === 0) {
+      celula.innerHTML = '<input type="text" class="zerado" value="0" readonly />';
+      jogador.eliminado = true;
+      tabela.rows[i + 1].cells[0].classList.add('eliminado');
+      tabela.rows[i + 1].cells[tabela.rows[i + 1].cells.length - 1].classList.add('eliminado');
+    } else {
+      // Adiciona a classe 'vencedor' se o jogador venceu a rodada
+      var indiceVencedor = -1;
+
+      if (pontosPerdidos === 0) {
+        indiceVencedor = i;
+        celula.innerHTML =
+          '<input type="text" class="vencedor resultadoInput" value="' +
+          pontosAtualizados +
+          '" />';
+      } else {
+        celula.innerHTML =
           '<input type="text" class="resultadoInput" value="' +
           pontosAtualizados +
           '" />';
+      }
+    }
   }
+
+  // Se não houver vencedor, escolha aleatoriamente um jogador que não foi eliminado
+  if (indiceVencedor === -1) {
+    var jogadoresNaoEliminados = nomes.filter(jogador => !jogador.eliminado);
+    if (jogadoresNaoEliminados.length > 0) {
+      indiceVencedor = Math.floor(Math.random() * jogadoresNaoEliminados.length);
+      nomes[indiceVencedor].pontos = Math.max(0, nomes[indiceVencedor].pontos);
+      tabela.rows[indiceVencedor + 1].cells[tabela.rows[indiceVencedor + 1].cells.length - 1].innerHTML =
+        '<input type="text" value="' +
+        nomes[indiceVencedor].pontos +
+        '" />';
+    }
+  }
+
 }
+
 
 // Adiciona um ouvinte de evento para atualizar os resultados quando o campo de entrada for editado
 tabela.addEventListener("input", function (event) {
@@ -109,16 +175,20 @@ function resetarPontos() {
   // Pede confirmação ao usuário
   var confirmacao = confirm('Tem certeza de que deseja resetar os pontos para todos os jogadores?');
 
+  
+  
   if (confirmacao) {
+    document.getElementById("novoNome").readOnly = false;
+    document.querySelector('button[onclick="adicionarLinha()"]').hidden = false;
     // Itera sobre a lista de nomes e redefine os pontos para 100
     for (var i = 0; i < nomes.length; i++) {
       nomes[i].pontos = 100;
     }
 
     // Reinicia o número de rodadas para 1
-    numRodadas = 1;
+    numRodadas = 0;
 
-    // Remove todas as colunas de rodadas extras
+    // Remove todas as colunas de rodadas, exceto a primeira
     var numColunas = tabela.rows[0].cells.length;
     for (var j = numColunas - 1; j > 1; j--) {
       for (var k = 0; k < tabela.rows.length; k++) {
@@ -126,9 +196,73 @@ function resetarPontos() {
       }
     }
 
+    // Atualiza a tabela de nomes
+    atualizarTabelaNomes();
+
     // Exibe mensagem informativa
-    alert('Pontos resetados para 100 em todas as rodadas.');
+    alert('Pontos resetados para 100 em todas as rodadas. A contagem de rodadas foi reiniciada. As colunas de rodadas foram mantidas, exceto a primeira.');
   } else {
     alert('Reset de pontos cancelado.');
   }
 }
+
+// Função para exibir pop-ups
+function exibirPopup(mensagem) {
+  var popup = document.createElement("div");
+  popup.className = "popup";
+
+  // Substitua a classe do ícone de alerta pela imagem abaixo do texto
+  popup.innerHTML =
+    '<div class="popup-content">' +
+      '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10%">' +
+        mensagem +
+        '<br /><img src="https://cdn-icons-png.flaticon.com/128/3253/3253156.png" alt="Icon" style="width: 50px; height: 50px;">' +
+      '</div>' +
+    '</div>';
+    
+  document.body.appendChild(popup);
+
+  // Adiciona sombra e borda à div do pop-up
+  popup.style.boxShadow = "0 4px 8px #888";  // Cor sólida sem transparência
+  popup.style.border = "1px solid #ccc";
+  popup.style.borderRadius = "8px";
+
+  // Define largura para 80% e altura para 20%
+  popup.style.width = "80%";
+  popup.style.height = "20%";
+
+  // Centraliza o pop-up na tela
+  popup.style.position = "fixed";
+  popup.style.left = "50%";
+  popup.style.top = "50%";
+  popup.style.transform = "translate(-50%, -50%)";
+
+  // Aumenta a fonte e centraliza o texto
+  popup.style.fontSize = "1.5em";
+  popup.style.textAlign = "center";  // Centraliza o texto
+
+  // Define um fundo sólido
+  popup.style.backgroundColor = "#fff";
+
+  // Adiciona a classe de animação após um pequeno atraso
+  setTimeout(function () {
+    popup.style.transition = "top 0.5s ease-in-out";  // Adiciona transição para top
+    popup.style.top = "50%";  // Move para o centro
+  }, 10);
+
+  // Remove o pop-up após 3 segundos (ajuste conforme necessário)
+  setTimeout(function () {
+    popup.remove();
+  }, 3000);
+}
+
+// Adicione ao seu JavaScript existente
+
+// Adicione isso ao seu script.js existente
+document.addEventListener('DOMContentLoaded', function () {
+    const toggleTheme = document.getElementById('toggleTheme');
+
+    toggleTheme.addEventListener('change', function () {
+        document.body.classList.toggle('dark-theme', toggleTheme.checked);
+    });
+});

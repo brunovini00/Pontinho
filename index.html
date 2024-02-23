@@ -3,6 +3,8 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" href="https://cdn-icons-png.flaticon.com/128/3769/3769686.png" type="image/x-icon">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-xxx..." crossorigin="anonymous" />
         <link rel="stylesheet" href="CSS/reset.css" />
         <link rel="stylesheet" href="CSS/style.css" />
         <title>Tabela de Rodadas</title>
@@ -10,27 +12,38 @@
     </head>
     <body>
         <header>
-            <h2>Tabela de Rodadas</h2>
+            <h2 id="titulo">Pontinho</h2>
+            <img src="https://cdn-icons-png.flaticon.com/128/3769/3769686.png" alt="icone-cartas" id="logo">
+            <div class="container_thema">
+                <label class="switch" id="mudarThema">
+                    <input type="checkbox"  id="toggleTheme">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </header>
+        
 
         <main>
             <label for="novoNome">Novo Jogador:</label>
             <input type="text" id="novoNome" />
-            <button onclick="adicionarLinha()">Adicionar Linha</button>
-            <button onclick="adicionarRodada()">Adicionar Rodada</button>
+            <button onclick="adicionarLinha()" id="incluirJogador">Adicionar Linha</button>
+            <button onclick="adicionarRodada()" id="incluirRodada">Adicionar Rodada</button>
             <button onclick="resetarPontos()" id="resetar">Resetar Pontos</button>
 
+            <!-- Adicione a classe 'table-container' ao envolver a tabela -->
             <table id="tabelaRodadas">
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Rodada 1</th>
+                        <th>Pontos Iniciais</th>
+                        <!-- ... Outras colunas do cabeçalho ... -->
                     </tr>
                 </thead>
                 <tbody>
                     <!-- Linhas da tabela serão adicionadas dinamicamente aqui -->
                 </tbody>
             </table>
+
         </main>
 
         <script src="script.js"></script>
