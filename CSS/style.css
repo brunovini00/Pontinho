@@ -11,6 +11,27 @@ body:not(.dark-theme) {
 body.dark-theme {
     background-color: #333;
     color: #fff;
+
+    
+}
+
+body.dark-theme #novoNome {
+    background-color: #333;
+    color: #fff;
+
+    
+}
+
+body.dark-theme main label {
+    color: #fff;
+
+    
+}
+
+body.dark-theme input {
+    color: #fff;
+
+    
 }
 
 html, body {
@@ -61,9 +82,7 @@ main {
 }
 
 #novoNome {
-    /* background-color: #ffffff; */
     border-bottom: 2px solid #000;
-    /* border-radius: 10px; */
     height: 30px;
     font-size: 1.3em;
     text-align: left;
@@ -190,14 +209,19 @@ button {
     text-align: center;
 }
 
-/* Adiciona/modifica as regras de estilo para o interruptor de tema */
 
+/* Adiciona/modifica as regras de estilo para o interruptor de tema */
 .switch {
     position: relative;
     display: inline-block;
     width: 60px;
     height: 34px;
-    background-color: #ccc;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .slider {
@@ -207,22 +231,37 @@ button {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #fff;
-    transition: .4s;
+    background-color: #ccc;
+    transition: background-color 0.4s;
     border-radius: 34px;
 }
 
-input:checked + .slider {
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: transform 0.4s;
+    border-radius: 50%;
+}
+
+.switch input:checked + .slider {
     background-color: #2196F3;
 }
 
-input:focus + .slider {
+.switch input:focus + .slider {
     box-shadow: 0 0 1px #2196F3;
 }
 
-input:checked + .slider:before {
+.switch input:checked + .slider:before {
     transform: translateX(26px);
 }
+
+/* Outros estilos para personalizar conforme necessário */
+
 
 /* Adiciona/modifica as regras de estilo para a tabela responsiva */
 
