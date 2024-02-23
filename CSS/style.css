@@ -91,9 +91,8 @@ main {
 /* Adiciona um estilo para o contêiner com scroll horizontal */
 .table-container {
     max-width: 100%;
-    overflow: auto;
+    overflow-x: auto;  /* Alterado para 'auto' para permitir scroll horizontal */
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin: 20px 0;
 }
 
@@ -101,7 +100,7 @@ main {
 .table-container table {
     margin-bottom: 17px;
     border-radius: 8px; /* Bordas arredondadas na tabela */
-    overflow: hidden; /* Garante que as bordas arredondadas sejam aplicadas corretamente */
+    /* overflow: hidden; Removido para permitir scroll horizontal */
 }
 
 table {
