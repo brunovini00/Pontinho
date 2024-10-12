@@ -97,7 +97,16 @@ function adicionarRodada() {
             tabela.rows[i + 1].cells[0].classList.add("eliminado");
             celula.classList.add("eliminado");
         } else {
-            celula.innerHTML = '<input type="text" class="resultadoInput" value="' + pontosAtualizados + '" />';
+
+            if (pontosPerdidos === 0) {
+
+                celula.innerHTML = '<input type="text" class="resultadoInput" value="' + pontosAtualizados + " 🏆" + '" />';
+                
+            } else {
+                
+                celula.innerHTML = '<input type="text" class="resultadoInput" value="' + pontosAtualizados + '" />';
+    
+            }
         }
     }
 }
