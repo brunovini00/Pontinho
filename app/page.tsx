@@ -7,6 +7,7 @@ type Round = { id: string; winnerId: string; losses: Record<string, number>; cre
 type Game = { players: Player[]; rounds: Round[]; startedAt: string; finished: boolean };
 
 const STORAGE_KEY = "pontinho-game-v1";
+const LAST_PLAYERS_KEY = "pontinho-last-players-v1";
 const makeId = () => Math.random().toString(36).slice(2, 10);
 
 function Trophy({ small = false }: { small?: boolean }) {
@@ -23,11 +24,19 @@ export default function Home() {
   const [showHistory, setShowHistory] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [eliminatedNames, setEliminatedNames] = useState<string[]>([]);
+  const [showChampion, setShowChampion] = useState(false);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setGame(JSON.parse(saved));
+      if (saved) {
+        const restored: Game = JSON.parse(saved);
+        setGame(restored);
+        setShowChampion(restored.finished);
+      } else {
+        const lastPlayers = JSON.parse(localStorage.getItem(LAST_PLAYERS_KEY) || "[]");
+        if (Array.isArray(lastPlayers) && lastPlayers.length >= 2) setNames(lastPlayers);
+      }
     } catch { /* armazenamento indisponível */ }
     setReady(true);
   }, []);
@@ -37,6 +46,10 @@ export default function Home() {
     if (game) localStorage.setItem(STORAGE_KEY, JSON.stringify(game));
     else localStorage.removeItem(STORAGE_KEY);
   }, [game, ready]);
+
+  useEffect(() => {
+    if (game?.players.length) localStorage.setItem(LAST_PLAYERS_KEY, JSON.stringify(game.players.map((p) => p.name)));
+  }, [game?.players]);
 
   const activePlayers = useMemo(() => game?.players.filter((p) => p.active) ?? [], [game]);
   const leader = useMemo(() => game && game.rounds.length > 0 ? activePlayers.slice().sort((a, b) => b.score - a.score)[0] : undefined, [activePlayers, game]);
@@ -49,6 +62,7 @@ export default function Home() {
     e.preventDefault();
     const clean = names.map((n) => n.trim()).filter(Boolean);
     if (clean.length < 2) return;
+    localStorage.setItem(LAST_PLAYERS_KEY, JSON.stringify(clean));
     setGame({ players: clean.map((name) => ({ id: makeId(), name, score: 100, active: true })), rounds: [], startedAt: new Date().toISOString(), finished: false });
   }
 
@@ -84,7 +98,13 @@ export default function Home() {
     setGame({ ...game, players, rounds, finished: players.filter((p) => p.active).length === 1 });
   }
 
-  function resetGame() { setGame(null); setNames(["", "", ""]); setConfirmReset(false); }
+  function resetGame() {
+    const remembered = game?.players.map((p) => p.name) ?? [];
+    setGame(null);
+    setNames(remembered.length >= 2 ? remembered : ["", "", ""]);
+    setConfirmReset(false);
+    setShowChampion(false);
+  }
 
   if (!ready) return <main className="loading">Embaralhando…</main>;
 
@@ -124,7 +144,7 @@ export default function Home() {
         <button className="ghost" onClick={() => setConfirmReset(true)}>Nova partida</button>
       </header>
 
-      {champion && <section className="champion"><span>♛</span><div><small>TEMOS UM CAMPEÃO</small><h1>{champion.name}</h1><p>Último jogador na mesa com {champion.score} pontos.</p></div></section>}
+      {champion && <section className="champion"><span>♛</span><div><small>CAMPEÃO DA PARTIDA</small><h1>{champion.name}</h1><p>Último jogador na mesa com {champion.score} pontos.</p></div><button onClick={() => setShowChampion(true)}>Rever celebração</button></section>}
 
       <section className="table-status" aria-label="Resumo da partida">
         <div><span>RODADA</span><strong>{game.rounds.length + (game.finished ? 0 : 1)}</strong></div>
@@ -186,7 +206,23 @@ export default function Home() {
           <div className="eyebrow">FIM DE JOGO</div>
           <h1 id="elimination-title">{eliminatedNames.join(" e ")} {eliminatedNames.length > 1 ? "foram eliminados" : "foi eliminado"}!</h1>
           <p>As cartas foram para a mesa. A disputa continua com {activePlayers.length} {activePlayers.length === 1 ? "jogador" : "jogadores"}.</p>
-          <button className="primary" onClick={() => setEliminatedNames([])}>{game.finished ? "Ver o campeão" : "Continuar a partida"} <span>→</span></button>
+          <button className="primary" onClick={() => { setEliminatedNames([]); if (game.finished) setShowChampion(true); }}>{game.finished ? "Ver o campeão" : "Continuar a partida"} <span>→</span></button>
+        </section>
+      </div>}
+
+      {champion && showChampion && eliminatedNames.length === 0 && <div className="champion-stage" role="dialog" aria-modal="true" aria-labelledby="champion-title">
+        <div className="spotlight" aria-hidden="true" />
+        <div className="suit-confetti" aria-hidden="true">{["♠","♥","♣","♦","♠","♦","♣","♥","♠","♣","♦","♥","♠","♦","♣","♥"].map((suit, i) => <i key={i} style={{ "--i": i } as React.CSSProperties}>{suit}</i>)}</div>
+        <div className="winner-cards" aria-hidden="true"><i>A<span>♠</span></i><i>K<span>♦</span></i><i>Q<span>♣</span></i></div>
+        <section className="winner-panel">
+          <div className="crown" aria-hidden="true">♛</div>
+          <div className="eyebrow">A MESA TEM UM DONO</div>
+          <p className="winner-kicker">CAMPEÃO DO PONTINHO</p>
+          <h1 id="champion-title">{champion.name}</h1>
+          <div className="winner-score"><strong>{champion.score}</strong><span>PONTOS RESTANTES</span></div>
+          <p>Sobreviveu a {game.rounds.length} {game.rounds.length === 1 ? "rodada" : "rodadas"} e foi o último a permanecer na mesa.</p>
+          <button className="primary" onClick={resetGame}>Jogar novamente <span>↻</span></button>
+          <button className="winner-secondary" onClick={() => setShowChampion(false)}>Ver placar final</button>
         </section>
       </div>}
     </main>
