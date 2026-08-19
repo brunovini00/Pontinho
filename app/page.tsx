@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 
 type Player = { id: string; name: string; score: number; active: boolean };
 type Round = { id: string; winnerId: string; losses: Record<string, number>; createdAt: string };
@@ -27,7 +27,6 @@ export default function Home() {
   const [showChampion, setShowChampion] = useState(false);
   const [roundError, setRoundError] = useState("");
   const [roundStep, setRoundStep] = useState<1 | 2>(1);
-  const [roundLossIndex, setRoundLossIndex] = useState(0);
 
   useEffect(() => {
     try {
@@ -62,7 +61,6 @@ export default function Home() {
     const loss = Number(losses[p.id]);
     return Number.isFinite(loss) && loss >= 1 && loss <= p.score;
   });
-  const currentRoundLoser = roundLosers[roundLossIndex];
 
   useEffect(() => {
     if (ready && !game) requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
@@ -85,7 +83,6 @@ export default function Home() {
     setLosses(Object.fromEntries(activePlayers.map((p) => [p.id, ""])));
     setRoundError("");
     setRoundStep(1);
-    setRoundLossIndex(0);
     setShowRound(true);
   }
 
@@ -210,14 +207,14 @@ export default function Home() {
       </section>}
 
       {showRound && <div className="modal-backdrop" role="presentation" onMouseDown={(e) => e.target === e.currentTarget && setShowRound(false)}>
-        <section className="modal" role="dialog" aria-modal="true" aria-labelledby="round-title">
-          <div className="round-mobile-head"><button type="button" onClick={() => roundStep === 2 ? (roundLossIndex > 0 ? setRoundLossIndex(roundLossIndex - 1) : setRoundStep(1)) : setShowRound(false)} aria-label={roundStep === 2 ? "Voltar" : "Fechar"}>{roundStep === 2 ? "←" : "×"}</button><div><span>RODADA {game.rounds.length + 1}</span><b>{roundStep === 1 ? "Escolha o vencedor" : `Pontuação ${roundLossIndex + 1} de ${roundLosers.length}`}</b></div><em>{roundStep}/2</em></div>
+        <section className={`modal round-modal round-step-${roundStep}`} role="dialog" aria-modal="true" aria-labelledby="round-title">
+          <div className="round-mobile-head"><button type="button" onClick={() => roundStep === 2 ? setRoundStep(1) : setShowRound(false)} aria-label={roundStep === 2 ? "Voltar" : "Fechar"}>{roundStep === 2 ? "←" : "×"}</button><div><span>RODADA {game.rounds.length + 1}</span><b>{roundStep === 1 ? "Escolha o vencedor" : "Informe todas as perdas"}</b></div><em>{roundStep}/2</em></div>
           <div className="eyebrow desktop-round-label">REGISTRAR RODADA {game.rounds.length + 1}</div>
           <h1 id="round-title">{roundStep === 1 ? <>Quem levou <em>essa mão?</em></> : <>Quanto cada um <em>perdeu?</em></>}</h1>
           <form className="round-form" onSubmit={saveRound}>
-            {roundStep === 1 ? <div className="step-panel step-winner"><label className="field-label">TOQUE EM QUEM VENCEU</label><div className="winner-grid">{activePlayers.map((p) => <button type="button" key={p.id} onClick={() => { setWinnerId(p.id); setRoundLossIndex(0); setRoundError(""); }} className={winnerId === p.id ? "selected" : ""}><span>{p.name.charAt(0).toUpperCase()}</span><b>{p.name}</b><small>{p.score} pontos</small><i>✓</i></button>)}</div><div className="step-one-footer"><p>{winnerId ? `${activePlayers.find((p) => p.id === winnerId)?.name} não perderá pontos nesta rodada.` : "Selecione um jogador para continuar."}</p><button type="button" className="primary" disabled={!winnerId} onClick={() => { setRoundLossIndex(0); setRoundStep(2); }}>Continuar <span>→</span></button></div></div> : <div className="step-panel step-loss"><div className="winner-summary"><span>{activePlayers.find((p) => p.id === winnerId)?.name.charAt(0).toUpperCase()}</span><div><small>VENCEDOR · NÃO PERDE PONTOS</small><b>{activePlayers.find((p) => p.id === winnerId)?.name}</b></div><strong>0</strong></div><div className="loss-title"><label className="field-label">PONTUAÇÃO DOS ADVERSÁRIOS</label><small>Um jogador por vez</small></div>
+            {roundStep === 1 ? <div className="step-panel step-winner"><label className="field-label">TOQUE EM QUEM VENCEU</label><div className="winner-grid">{activePlayers.map((p) => <button type="button" key={p.id} onClick={() => { setWinnerId(p.id); setRoundError(""); }} className={winnerId === p.id ? "selected" : ""}><span>{p.name.charAt(0).toUpperCase()}</span><b>{p.name}</b><small>{p.score} pontos</small><i>✓</i></button>)}</div><div className="step-one-footer"><p>{winnerId ? `${activePlayers.find((p) => p.id === winnerId)?.name} não perderá pontos nesta rodada.` : "Selecione um jogador para continuar."}</p><button type="button" className="primary" disabled={!winnerId} onClick={() => setRoundStep(2)}>Continuar <span>→</span></button></div></div> : <div className="step-panel step-loss"><div className="winner-summary"><span>{activePlayers.find((p) => p.id === winnerId)?.name.charAt(0).toUpperCase()}</span><div><small>VENCEDOR · NÃO PERDE PONTOS</small><b>{activePlayers.find((p) => p.id === winnerId)?.name}</b></div><strong>0</strong></div><div className="loss-title"><label className="field-label">PERDA DOS ADVERSÁRIOS</label><small>Todos são obrigatórios</small></div>
               <div className="loss-progress"><span><i style={{ width: `${(filledLosses / Math.max(1, roundLosers.length)) * 100}%` }} /></span><b>{filledLosses}/{roundLosers.length} preenchidos</b></div>
-              {currentRoundLoser && (() => { const p = currentRoundLoser; const hasLoss = Number(losses[p.id]) >= 1; const isLast = roundLossIndex === roundLosers.length - 1; return <><div className={`score-focus-card ${hasLoss ? "loss-complete" : "loss-missing"}`} key={p.id}><div className="focus-player"><span>{p.name.charAt(0).toUpperCase()}</span><small>QUANTOS PONTOS PERDEU?</small><h2>{p.name}</h2><p>Possui {p.score} pontos</p></div><div className="focus-score"><button type="button" onClick={() => { setLosses({ ...losses, [p.id]: String(Math.max(1, (Number(losses[p.id]) || 1) - 5)) }); setRoundError(""); }} aria-label={`Diminuir perda de ${p.name}`}>−</button><label><input autoFocus aria-label={`Pontos perdidos por ${p.name}`} type="number" min="1" max={p.score} inputMode="numeric" placeholder="0" value={losses[p.id] ?? ""} onFocus={(e) => e.currentTarget.select()} onChange={(e) => { setLosses({ ...losses, [p.id]: e.target.value === "" ? "" : String(Math.min(p.score, Math.max(1, Number(e.target.value)))) }); setRoundError(""); }} /><small>PONTOS</small></label><button type="button" onClick={() => { setLosses({ ...losses, [p.id]: String(Math.min(p.score, (Number(losses[p.id]) || 0) + 5)) }); setRoundError(""); }} aria-label={`Aumentar perda de ${p.name}`}>＋</button></div><div className="quick-values"><button type="button" onClick={() => setLosses({ ...losses, [p.id]: String(Math.min(5, p.score)) })}>5</button><button type="button" onClick={() => setLosses({ ...losses, [p.id]: String(Math.min(10, p.score)) })}>10</button><button type="button" onClick={() => setLosses({ ...losses, [p.id]: String(Math.min(20, p.score)) })}>20</button><button type="button" onClick={() => setLosses({ ...losses, [p.id]: String(p.score) })}>Zerar</button></div></div><div className="player-dots" aria-label={`Jogador ${roundLossIndex + 1} de ${roundLosers.length}`}>{roundLosers.map((loser, i) => <i key={loser.id} className={`${i === roundLossIndex ? "current" : ""} ${Number(losses[loser.id]) >= 1 ? "done" : ""}`} />)}</div><div className="round-submit focus-submit"><div className={`round-guidance ${hasLoss ? "ready" : ""}`}><span>{hasLoss ? "✓" : "!"}</span><p>{hasLoss ? `${p.name} perderá ${losses[p.id]} pontos.` : "Informe pelo menos 1 ponto para continuar."}</p></div>{isLast ? <button type="submit" className="primary" disabled={!roundIsValid}>Aplicar resultado <span>✓</span></button> : <button type="button" className="primary" disabled={!hasLoss} onClick={() => setRoundLossIndex(roundLossIndex + 1)}>Próximo jogador <span>→</span></button>}</div></>; })()}</div>}
+              <div className={`loss-list compact-loss-list ${roundLosers.length > 7 ? "very-dense" : ""}`}>{roundLosers.map((p, index) => { const hasLoss = Number(losses[p.id]) >= 1; return <div className={`loss-entry ${hasLoss ? "loss-complete" : "loss-missing"}`} style={{ "--loss-index": index } as React.CSSProperties} key={p.id}><div className="loss-person"><span>{p.name.charAt(0).toUpperCase()}</span><div><b>{p.name}</b><small>{hasLoss ? `Perde ${losses[p.id]} pontos` : `Tem ${p.score} pontos`}</small></div></div><div className="loss-control"><button type="button" onClick={() => { setLosses({ ...losses, [p.id]: String(Math.max(1, (Number(losses[p.id]) || 1) - 5)) }); setRoundError(""); }} aria-label={`Diminuir perda de ${p.name}`}>−</button><label><input aria-label={`Pontos perdidos por ${p.name}`} type="number" min="1" max={p.score} inputMode="numeric" placeholder="—" value={losses[p.id] ?? ""} onFocus={(e) => e.currentTarget.select()} onChange={(e) => { setLosses({ ...losses, [p.id]: e.target.value === "" ? "" : String(Math.min(p.score, Math.max(1, Number(e.target.value)))) }); setRoundError(""); }} /><small>PTS</small></label><button type="button" onClick={() => { setLosses({ ...losses, [p.id]: String(Math.min(p.score, (Number(losses[p.id]) || 0) + 5)) }); setRoundError(""); }} aria-label={`Aumentar perda de ${p.name}`}>＋</button></div></div>; })}</div><div className="round-submit compact-submit"><div className={`round-guidance ${roundIsValid ? "ready" : ""}`}><span>{roundIsValid ? "✓" : "!"}</span><p>{roundIsValid ? "Tudo pronto para finalizar a rodada." : `${roundLosers.length - filledLosses} ${roundLosers.length - filledLosses === 1 ? "jogador ainda precisa" : "jogadores ainda precisam"} perder pontos.`}</p></div><button type="submit" className="primary" disabled={!roundIsValid}>Aplicar resultado <span>✓</span></button></div></div>}
           </form>
         </section>
       </div>}

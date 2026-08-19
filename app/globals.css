@@ -129,3 +129,49 @@ button:focus-visible,input:focus-visible { outline:2px solid var(--lime); outlin
   .step-loss .loss-title { margin-top:14px; }.step-loss .loss-progress { margin-top:8px; margin-bottom:10px; }.score-focus-card { min-height:300px; padding:16px 14px; }.focus-score { margin:18px 0 13px; }.focus-submit { position:static; flex:0 0 auto; margin:0 -16px -12px; padding:7px 16px calc(8px + env(safe-area-inset-bottom)); }.focus-submit .round-guidance { margin-bottom:5px; }
 }
 @media (max-height:690px) and (max-width:639px) { .modal:has(.round-form)>h1 { font-size:25px; margin-bottom:11px; }.winner-summary { padding:7px; }.winner-summary>span { width:36px; height:36px; }.step-loss .loss-title { margin-top:9px; }.score-focus-card { min-height:235px; padding:10px; }.focus-player>span { width:44px; height:44px; margin-bottom:7px; }.focus-player h2 { font-size:20px; }.focus-score { margin:11px 0 9px; }.focus-score>label { height:72px; }.focus-score input { height:44px; font-size:32px; }.focus-score>button { height:54px; }.quick-values button { min-height:36px; }.player-dots { min-height:20px; padding:5px 0 2px; } }
+
+/* Lista de perdas sem rolagem: tudo visível e tocável no celular */
+@media (max-width:639px) {
+  .round-step-2 { overflow:hidden; }
+  .round-step-2>h1 { display:none; }
+  .round-step-2 .round-mobile-head { margin-bottom:8px; }
+  .round-step-2 .step-loss { overflow:hidden; }
+  .round-step-2 .winner-summary { min-height:40px; padding:5px 8px; border-radius:10px; }
+  .round-step-2 .winner-summary>span { width:32px; height:32px; border-radius:8px; font-size:16px; }
+  .round-step-2 .winner-summary>div { gap:1px; }
+  .round-step-2 .winner-summary b { font-size:12px; }
+  .round-step-2 .winner-summary>strong { font-size:22px; }
+  .round-step-2 .loss-title { margin-top:8px; }
+  .round-step-2 .loss-title .field-label { font-size:8px; }
+  .round-step-2 .loss-title small { font-size:7px; }
+  .round-step-2 .loss-progress { margin:5px 2px 6px; }
+  .round-step-2 .compact-loss-list { flex:0 1 auto; min-height:0; overflow:visible; gap:4px; margin:0; padding:0; }
+  .round-step-2 .compact-loss-list .loss-entry { min-height:47px; padding:3px 7px; border-radius:10px; }
+  .round-step-2 .loss-person { max-width:36%; gap:6px; }
+  .round-step-2 .loss-person>span { flex-basis:28px; width:28px; height:28px; border-radius:7px; font-size:13px; }
+  .round-step-2 .loss-person>div { gap:1px; }
+  .round-step-2 .loss-person b { font-size:11px; }
+  .round-step-2 .loss-person small { font-size:7px; }
+  .round-step-2 .loss-control { gap:3px; }
+  .round-step-2 .loss-control>button { width:38px; height:39px; border-radius:9px; }
+  .round-step-2 .loss-control>label { width:49px; height:40px; border-radius:9px; }
+  .round-step-2 .loss-control input { width:45px; height:23px; min-height:0; font-size:17px; }
+  .round-step-2 .compact-submit { position:static; flex:0 0 auto; margin:auto -16px -12px; padding:6px 16px calc(8px + env(safe-area-inset-bottom)); border-top:0; background:linear-gradient(180deg,#090d0b00,#090d0b 12%); }
+  .round-step-2 .compact-submit .round-guidance { min-height:25px; margin-bottom:4px; padding:3px 7px; }
+  .round-step-2 .compact-submit .round-guidance>span { width:17px; height:17px; flex-basis:17px; font-size:9px; }
+  .round-step-2 .compact-submit .primary { min-height:48px; }
+  .round-step-2 .very-dense { gap:3px; }
+  .round-step-2 .very-dense .loss-entry { min-height:42px; padding-top:1px; padding-bottom:1px; }
+  .round-step-2 .very-dense .loss-control>button { height:36px; }
+  .round-step-2 .very-dense .loss-control>label { height:37px; }
+}
+@media (max-height:700px) and (max-width:639px) {
+  .round-step-2 .winner-summary { display:none; }
+  .round-step-2 .loss-title { margin-top:0; }
+  .round-step-2 .compact-loss-list .loss-entry { min-height:39px; }
+  .round-step-2 .loss-person>span { display:none; }
+  .round-step-2 .loss-control>button { height:34px; }
+  .round-step-2 .loss-control>label { height:35px; }
+  .round-step-2 .compact-submit .round-guidance { display:none; }
+  .round-step-2 .compact-submit .primary { min-height:44px; }
+}
