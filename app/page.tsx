@@ -25,6 +25,7 @@ export default function Home() {
   const [confirmReset, setConfirmReset] = useState(false);
   const [eliminatedNames, setEliminatedNames] = useState<string[]>([]);
   const [showChampion, setShowChampion] = useState(false);
+  const [roundError, setRoundError] = useState("");
 
   useEffect(() => {
     try {
@@ -53,6 +54,9 @@ export default function Home() {
 
   const activePlayers = useMemo(() => game?.players.filter((p) => p.active) ?? [], [game]);
   const leader = useMemo(() => game && game.rounds.length > 0 ? activePlayers.slice().sort((a, b) => b.score - a.score)[0] : undefined, [activePlayers, game]);
+  const roundLosers = winnerId ? activePlayers.filter((p) => p.id !== winnerId) : [];
+  const filledLosses = roundLosers.filter((p) => Number(losses[p.id]) > 0).length;
+  const roundIsValid = Boolean(winnerId) && roundLosers.length > 0 && filledLosses === roundLosers.length;
 
   function addName() { if (names.length < 10) setNames([...names, ""]); }
   function updateName(index: number, value: string) { setNames(names.map((n, i) => i === index ? value : n)); }
@@ -69,12 +73,18 @@ export default function Home() {
   function openRound() {
     setWinnerId("");
     setLosses(Object.fromEntries(activePlayers.map((p) => [p.id, ""])));
+    setRoundError("");
     setShowRound(true);
   }
 
   function saveRound(e: FormEvent) {
     e.preventDefault();
     if (!game || !winnerId) return;
+    const missing = activePlayers.filter((p) => p.id !== winnerId && !(Number(losses[p.id]) > 0));
+    if (missing.length) {
+      setRoundError(`${missing.length === 1 ? missing[0].name : `${missing.length} jogadores`} ainda precisa perder pontos.`);
+      return;
+    }
     const parsed = Object.fromEntries(activePlayers.map((p) => [p.id, p.id === winnerId ? 0 : Math.max(0, Number(losses[p.id]) || 0)]));
     const players = game.players.map((p) => {
       if (!p.active || p.id === winnerId) return p;
@@ -187,12 +197,13 @@ export default function Home() {
           <button className="close" onClick={() => setShowRound(false)} aria-label="Fechar">×</button>
           <div className="eyebrow">FINALIZAR RODADA {game.rounds.length + 1}</div>
           <h1 id="round-title">Quem levou <em>essa mão?</em></h1>
-          <form onSubmit={saveRound}>
+          <form className="round-form" onSubmit={saveRound}>
             <label className="field-label">VENCEDOR DA RODADA</label>
-            <div className="winner-grid">{activePlayers.map((p) => <button type="button" key={p.id} onClick={() => setWinnerId(p.id)} className={winnerId === p.id ? "selected" : ""}><span>{p.name.charAt(0).toUpperCase()}</span>{p.name}<i>✓</i></button>)}</div>
+            <div className="winner-grid">{activePlayers.map((p) => <button type="button" key={p.id} onClick={() => { setWinnerId(p.id); setRoundError(""); }} className={winnerId === p.id ? "selected" : ""}><span>{p.name.charAt(0).toUpperCase()}</span>{p.name}<i>✓</i></button>)}</div>
             {winnerId && <><div className="loss-title"><label className="field-label">PONTOS PERDIDOS</label><small>O vencedor não perde pontos</small></div>
-              <div className="loss-list">{activePlayers.filter((p) => p.id !== winnerId).map((p) => <label key={p.id}><span>{p.name}<small>{p.score} disponíveis</small></span><div><button type="button" onClick={() => setLosses({ ...losses, [p.id]: String(Math.max(0, (Number(losses[p.id]) || 0) - 5)) })} aria-label={`Diminuir perda de ${p.name}`}>−</button><input type="number" min="0" max={p.score} inputMode="numeric" placeholder="0" value={losses[p.id] ?? ""} onChange={(e) => setLosses({ ...losses, [p.id]: String(Math.min(p.score, Math.max(0, Number(e.target.value)))) })} /><button type="button" onClick={() => setLosses({ ...losses, [p.id]: String(Math.min(p.score, (Number(losses[p.id]) || 0) + 5)) })} aria-label={`Aumentar perda de ${p.name}`}>＋</button><small>PTS</small></div></label>)}</div></>}
-            <button className="primary" disabled={!winnerId}>Confirmar resultado <span>✓</span></button>
+              <div className="loss-progress"><span><i style={{ width: `${(filledLosses / Math.max(1, roundLosers.length)) * 100}%` }} /></span><b>{filledLosses}/{roundLosers.length} preenchidos</b></div>
+              <div className="loss-list">{roundLosers.map((p, index) => { const hasLoss = Number(losses[p.id]) > 0; return <label style={{ "--loss-index": index } as React.CSSProperties} className={hasLoss ? "loss-complete" : "loss-missing"} key={p.id}><span>{p.name}<small>{hasLoss ? `−${losses[p.id]} nesta rodada` : "Obrigatório · mínimo 1 ponto"}</small></span><div><button type="button" onClick={() => { setLosses({ ...losses, [p.id]: String(Math.max(0, (Number(losses[p.id]) || 0) - 5)) }); setRoundError(""); }} aria-label={`Diminuir perda de ${p.name}`}>−</button><input aria-label={`Pontos perdidos por ${p.name}`} type="number" min="1" max={p.score} inputMode="numeric" placeholder="0" value={losses[p.id] ?? ""} onFocus={(e) => e.currentTarget.select()} onChange={(e) => { setLosses({ ...losses, [p.id]: e.target.value === "" ? "" : String(Math.min(p.score, Math.max(0, Number(e.target.value)))) }); setRoundError(""); }} /><button type="button" onClick={() => { setLosses({ ...losses, [p.id]: String(Math.min(p.score, (Number(losses[p.id]) || 0) + 5)) }); setRoundError(""); }} aria-label={`Aumentar perda de ${p.name}`}>＋</button><small>PTS</small></div></label>; })}</div></>}
+            <div className="round-submit"><div className={`round-guidance ${roundIsValid ? "ready" : ""}`} aria-live="polite"><span>{roundIsValid ? "✓" : "!"}</span><p>{roundError || (roundIsValid ? "Tudo certo. Pode confirmar a rodada." : winnerId ? "Todos os perdedores precisam perder ao menos 1 ponto." : "Primeiro, escolha quem venceu a rodada.")}</p></div><button className="primary" disabled={!roundIsValid}>Confirmar resultado <span>✓</span></button></div>
           </form>
         </section>
       </div>}
