@@ -22,6 +22,7 @@ export default function Home() {
   const [showRound, setShowRound] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [eliminatedNames, setEliminatedNames] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -38,7 +39,7 @@ export default function Home() {
   }, [game, ready]);
 
   const activePlayers = useMemo(() => game?.players.filter((p) => p.active) ?? [], [game]);
-  const leader = useMemo(() => activePlayers.slice().sort((a, b) => b.score - a.score)[0], [activePlayers]);
+  const leader = useMemo(() => game && game.rounds.length > 0 ? activePlayers.slice().sort((a, b) => b.score - a.score)[0] : undefined, [activePlayers, game]);
 
   function addName() { if (names.length < 10) setNames([...names, ""]); }
   function updateName(index: number, value: string) { setNames(names.map((n, i) => i === index ? value : n)); }
@@ -67,8 +68,10 @@ export default function Home() {
       return { ...p, score, active: score > 0 };
     });
     const remaining = players.filter((p) => p.active);
+    const justEliminated = players.filter((p) => p.active === false && game.players.find((old) => old.id === p.id)?.active).map((p) => p.name);
     setGame({ ...game, players, rounds: [...game.rounds, { id: makeId(), winnerId, losses: parsed, createdAt: new Date().toISOString() }], finished: remaining.length === 1 });
     setShowRound(false);
+    if (justEliminated.length) setEliminatedNames(justEliminated);
   }
 
   function undoLastRound() {
@@ -87,6 +90,9 @@ export default function Home() {
 
   if (!game) return (
     <main className="setup-page">
+      <div className="card-decor card-one" aria-hidden="true"><b>A</b><span>♠</span></div>
+      <div className="card-decor card-two" aria-hidden="true"><b>K</b><span>♥</span></div>
+      <div className="floating-suits" aria-hidden="true"><i>♣</i><i>♦</i><i>♠</i></div>
       <header className="brand"><Trophy /><div><strong>PONTINHO</strong><span>PLACAR</span></div></header>
       <section className="setup-card">
         <div className="eyebrow">NOVA PARTIDA</div>
@@ -120,6 +126,14 @@ export default function Home() {
 
       {champion && <section className="champion"><span>♛</span><div><small>TEMOS UM CAMPEÃO</small><h1>{champion.name}</h1><p>Último jogador na mesa com {champion.score} pontos.</p></div></section>}
 
+      <section className="table-status" aria-label="Resumo da partida">
+        <div><span>RODADA</span><strong>{game.rounds.length + (game.finished ? 0 : 1)}</strong></div>
+        <i />
+        <div><span>NA MESA</span><strong>{activePlayers.length}</strong></div>
+        <i />
+        <div><span>ELIMINADOS</span><strong>{game.players.length - activePlayers.length}</strong></div>
+      </section>
+
       <section className="score-head">
         <div><div className="eyebrow">{game.finished ? "PARTIDA ENCERRADA" : `RODADA ${game.rounds.length + 1}`}</div><h1>Placar <em>da mesa</em></h1></div>
         {!game.finished && <div className="live"><i /> AO VIVO</div>}
@@ -127,17 +141,17 @@ export default function Home() {
 
       <section className="score-list">
         {game.players.slice().sort((a, b) => Number(b.active) - Number(a.active) || b.score - a.score).map((player, index) => (
-          <article className={`player-card ${!player.active ? "eliminated" : ""} ${player.id === leader?.id && activePlayers.length > 1 ? "leading" : ""}`} key={player.id}>
+          <article style={{ "--deal-index": index } as React.CSSProperties} className={`player-card ${!player.active ? "eliminated" : ""} ${player.id === leader?.id && activePlayers.length > 1 ? "leading" : ""}`} key={player.id}>
             <div className="rank">{!player.active ? "×" : String(index + 1).padStart(2, "0")}</div>
             <div className="avatar">{player.name.charAt(0).toUpperCase()}</div>
-            <div className="player-info"><h2>{player.name}</h2><span>{!player.active ? "FORA DO JOGO" : player.id === leader?.id && activePlayers.length > 1 ? "♛ NA LIDERANÇA" : "NA MESA"}</span></div>
+            <div className="player-info"><h2>{player.name}</h2><span>{!player.active ? "CARTAS NA MESA · ELIMINADO" : player.id === leader?.id && activePlayers.length > 1 ? "♛ NA LIDERANÇA" : game.rounds.length === 0 ? "AGUARDANDO A 1ª RODADA" : "NA MESA"}</span></div>
             <div className="points"><strong>{player.score}</strong><span>PTS</span></div>
             <div className="score-bar"><i style={{ width: `${player.score}%` }} /></div>
           </article>
         ))}
       </section>
 
-      {!game.finished && <button className="primary round-button" onClick={openRound}>Finalizar rodada <span>→</span></button>}
+      {!game.finished && <div className="action-dock"><button className="primary round-button" onClick={openRound}><span className="button-card">♦</span><b>Finalizar rodada</b><span>→</span></button><small>Registre o vencedor e os pontos perdidos</small></div>}
       <button className="history-link" onClick={() => setShowHistory(!showHistory)}>☷ Histórico de rodadas <span>{game.rounds.length}</span></button>
 
       {showHistory && <section className="history-panel">
@@ -157,13 +171,24 @@ export default function Home() {
             <label className="field-label">VENCEDOR DA RODADA</label>
             <div className="winner-grid">{activePlayers.map((p) => <button type="button" key={p.id} onClick={() => setWinnerId(p.id)} className={winnerId === p.id ? "selected" : ""}><span>{p.name.charAt(0).toUpperCase()}</span>{p.name}<i>✓</i></button>)}</div>
             {winnerId && <><div className="loss-title"><label className="field-label">PONTOS PERDIDOS</label><small>O vencedor não perde pontos</small></div>
-              <div className="loss-list">{activePlayers.filter((p) => p.id !== winnerId).map((p) => <label key={p.id}><span>{p.name}</span><div><b>−</b><input type="number" min="0" max="100" inputMode="numeric" placeholder="0" value={losses[p.id] ?? ""} onChange={(e) => setLosses({ ...losses, [p.id]: e.target.value })} /><small>PTS</small></div></label>)}</div></>}
+              <div className="loss-list">{activePlayers.filter((p) => p.id !== winnerId).map((p) => <label key={p.id}><span>{p.name}<small>{p.score} disponíveis</small></span><div><button type="button" onClick={() => setLosses({ ...losses, [p.id]: String(Math.max(0, (Number(losses[p.id]) || 0) - 5)) })} aria-label={`Diminuir perda de ${p.name}`}>−</button><input type="number" min="0" max={p.score} inputMode="numeric" placeholder="0" value={losses[p.id] ?? ""} onChange={(e) => setLosses({ ...losses, [p.id]: String(Math.min(p.score, Math.max(0, Number(e.target.value)))) })} /><button type="button" onClick={() => setLosses({ ...losses, [p.id]: String(Math.min(p.score, (Number(losses[p.id]) || 0) + 5)) })} aria-label={`Aumentar perda de ${p.name}`}>＋</button><small>PTS</small></div></label>)}</div></>}
             <button className="primary" disabled={!winnerId}>Confirmar resultado <span>✓</span></button>
           </form>
         </section>
       </div>}
 
       {confirmReset && <div className="modal-backdrop"><section className="modal confirm"><div className="eyebrow">NOVA PARTIDA</div><h1>Encerrar a partida atual?</h1><p>O placar e todo o histórico desta partida serão apagados.</p><div className="confirm-actions"><button className="ghost" onClick={() => setConfirmReset(false)}>Cancelar</button><button className="danger" onClick={resetGame}>Encerrar</button></div></section></div>}
+
+      {eliminatedNames.length > 0 && <div className="elimination-backdrop" role="alertdialog" aria-modal="true" aria-labelledby="elimination-title">
+        <div className="thrown-cards" aria-hidden="true"><i>7<span>♣</span></i><i>Q<span>♦</span></i><i>2<span>♠</span></i></div>
+        <section className="elimination-card">
+          <div className="skull-card" aria-hidden="true"><span>♠</span><b>0</b><span>♠</span></div>
+          <div className="eyebrow">FIM DE JOGO</div>
+          <h1 id="elimination-title">{eliminatedNames.join(" e ")} {eliminatedNames.length > 1 ? "foram eliminados" : "foi eliminado"}!</h1>
+          <p>As cartas foram para a mesa. A disputa continua com {activePlayers.length} {activePlayers.length === 1 ? "jogador" : "jogadores"}.</p>
+          <button className="primary" onClick={() => setEliminatedNames([])}>{game.finished ? "Ver o campeão" : "Continuar a partida"} <span>→</span></button>
+        </section>
+      </div>}
     </main>
   );
 }
