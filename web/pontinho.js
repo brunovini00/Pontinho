@@ -8309,8 +8309,106 @@ function ne({ players: e, round: t, onClose: n, onSave: r }) {
 	});
 }
 //#endregion
+//#region app/round-history.tsx
+function re({ game: e, onUndo: t }) {
+	let [n, r] = (0, l.useState)(!1), [i, a] = (0, l.useState)(), o = (0, l.useRef)(null), s = (0, l.useId)(), c = e.rounds.length, u = new Map(e.players.map(({ id: e, name: t }) => [e, t]));
+	function d() {
+		c === 1 && o.current?.focus({ preventScroll: !0 }), t(), a(c);
+	}
+	return /* @__PURE__ */ (0, C.jsxs)("section", {
+		className: "history",
+		children: [/* @__PURE__ */ (0, C.jsxs)("button", {
+			ref: o,
+			type: "button",
+			id: `${s}-toggle`,
+			className: "history-toggle",
+			"aria-expanded": n,
+			"aria-controls": s,
+			onClick: () => r((e) => !e),
+			children: [
+				/* @__PURE__ */ (0, C.jsx)("span", {
+					className: "history-icon",
+					"aria-hidden": "true"
+				}),
+				/* @__PURE__ */ (0, C.jsxs)("span", {
+					className: "history-label",
+					children: [
+						"Histórico de rodadas",
+						/* @__PURE__ */ (0, C.jsx)("span", {
+							className: "history-count",
+							"aria-hidden": "true",
+							children: c
+						}),
+						/* @__PURE__ */ (0, C.jsxs)("span", {
+							className: "sr-only",
+							children: [
+								", ",
+								c,
+								" ",
+								c === 1 ? "rodada" : "rodadas"
+							]
+						})
+					]
+				}),
+				/* @__PURE__ */ (0, C.jsx)("span", {
+					className: "chevron",
+					"aria-hidden": "true"
+				})
+			]
+		}), /* @__PURE__ */ (0, C.jsx)("div", {
+			className: "history-panel",
+			"data-open": n,
+			inert: !n,
+			"aria-hidden": !n,
+			id: s,
+			role: "region",
+			"aria-labelledby": `${s}-toggle`,
+			children: /* @__PURE__ */ (0, C.jsx)("div", {
+				className: "history-clip",
+				children: /* @__PURE__ */ (0, C.jsxs)("div", {
+					className: "history-body",
+					children: [/* @__PURE__ */ (0, C.jsx)("div", {
+						className: "history-feedback",
+						role: "status",
+						children: i !== void 0 && /* @__PURE__ */ (0, C.jsxs)("p", { children: [
+							"Rodada ",
+							i,
+							" desfeita. Placar restaurado."
+						] }, i)
+					}), c === 0 ? /* @__PURE__ */ (0, C.jsx)("p", {
+						className: "muted",
+						children: "Os resultados aparecem aqui depois da primeira rodada."
+					}) : /* @__PURE__ */ (0, C.jsxs)(C.Fragment, { children: [/* @__PURE__ */ (0, C.jsx)("button", {
+						type: "button",
+						className: "button secondary undo-button",
+						onClick: d,
+						children: "Desfazer última rodada"
+					}), /* @__PURE__ */ (0, C.jsx)("ol", {
+						className: "history-list",
+						reversed: !0,
+						children: e.rounds.slice().reverse().map((e, t) => /* @__PURE__ */ (0, C.jsxs)("li", {
+							className: "history-round",
+							children: [/* @__PURE__ */ (0, C.jsxs)("div", {
+								className: "history-round-header",
+								children: [/* @__PURE__ */ (0, C.jsxs)("strong", { children: [u.get(e.winnerId), " venceu"] }), /* @__PURE__ */ (0, C.jsxs)("span", { children: ["Rodada ", c - t] })]
+							}), /* @__PURE__ */ (0, C.jsx)("ul", {
+								className: "history-losses",
+								children: Object.entries(e.losses).filter(([t, n]) => t !== e.winnerId && n > 0).map(([e, t]) => /* @__PURE__ */ (0, C.jsxs)("li", { children: [
+									/* @__PURE__ */ (0, C.jsx)("span", { children: u.get(e) }),
+									" ",
+									/* @__PURE__ */ (0, C.jsxs)("b", { children: ["−", t] })
+								] }, e))
+							})]
+						}, e.id))
+					})] })]
+				})
+			})
+		})]
+	});
+}
+//#endregion
 //#region app/setup.tsx
-function re() {
+function w() {
 	return /* @__PURE__ */ (0, C.jsxs)("div", {
 		className: "brand",
 		children: [/* @__PURE__ */ (0, C.jsx)("span", {
@@ -8323,7 +8421,7 @@ function re() {
 		})] })]
 	});
 }
-function w({ initialNames: e, onStart: t }) {
+function ie({ initialNames: e, onStart: t }) {
 	let [n, r] = (0, l.useState)(() => e.map((e, t) => ({
 		name: e,
 		id: t
@@ -8344,7 +8442,7 @@ function w({ initialNames: e, onStart: t }) {
 		children: [
 			/* @__PURE__ */ (0, C.jsx)("header", {
 				className: "site-header",
-				children: /* @__PURE__ */ (0, C.jsx)(re, {})
+				children: /* @__PURE__ */ (0, C.jsx)(w, {})
 			}),
 			/* @__PURE__ */ (0, C.jsxs)("section", {
 				className: "table-banner",
@@ -8453,7 +8551,7 @@ function w({ initialNames: e, onStart: t }) {
 }
 //#endregion
 //#region app/scoreboard.tsx
-function ie({ player: e, isLeader: t }) {
+function ae({ player: e, isLeader: t }) {
 	return /* @__PURE__ */ (0, C.jsxs)("li", {
 		className: "score-row",
 		"data-out": !e.active,
@@ -8487,42 +8585,6 @@ function ie({ player: e, isLeader: t }) {
 		]
 	});
 }
-function ae({ game: e, onUndo: t }) {
-	let n = new Map(e.players.map(({ id: e, name: t }) => [e, t]));
-	return /* @__PURE__ */ (0, C.jsxs)("details", {
-		className: "history",
-		children: [/* @__PURE__ */ (0, C.jsxs)("summary", { children: [/* @__PURE__ */ (0, C.jsxs)("span", { children: ["Histórico de rodadas ", /* @__PURE__ */ (0, C.jsx)("span", {
-			className: "history-count",
-			children: e.rounds.length
-		})] }), /* @__PURE__ */ (0, C.jsx)("span", {
-			className: "chevron",
-			"aria-hidden": "true"
-		})] }), /* @__PURE__ */ (0, C.jsx)("div", {
-			className: "history-body",
-			children: e.rounds.length === 0 ? /* @__PURE__ */ (0, C.jsx)("p", {
-				className: "muted",
-				children: "Os resultados aparecem aqui depois da primeira rodada."
-			}) : /* @__PURE__ */ (0, C.jsxs)(C.Fragment, { children: [/* @__PURE__ */ (0, C.jsx)("button", {
-				type: "button",
-				className: "button secondary undo-button",
-				onClick: t,
-				children: "Desfazer última rodada"
-			}), /* @__PURE__ */ (0, C.jsx)("ol", {
-				className: "history-list",
-				reversed: !0,
-				children: e.rounds.slice().reverse().map((t, r) => /* @__PURE__ */ (0, C.jsxs)("li", { children: [
-					/* @__PURE__ */ (0, C.jsxs)("span", { children: ["Rodada ", e.rounds.length - r] }),
-					/* @__PURE__ */ (0, C.jsxs)("strong", { children: [n.get(t.winnerId), " venceu"] }),
-					/* @__PURE__ */ (0, C.jsx)("ul", { children: Object.entries(t.losses).filter(([e, n]) => e !== t.winnerId && n > 0).map(([e, t]) => /* @__PURE__ */ (0, C.jsxs)("li", { children: [
-						n.get(e),
-						" ",
-						/* @__PURE__ */ (0, C.jsxs)("b", { children: ["−", t] })
-					] }, e)) })
-				] }, t.id))
-			})] })
-		})]
-	});
-}
 function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, onUndo: a, onCelebrate: o }) {
 	let s = e.players.filter((e) => e.active).sort((e, t) => t.score - e.score), c = e.players.filter((e) => !e.active), u = e.finished ? s[0] : void 0, d = v(e), f = e.rounds.length + +!e.finished, p = e.rounds.at(-1), m = e.players.find(({ id: e }) => e === p?.winnerId), h = new Intl.ListFormat("pt-BR");
 	return (0, l.useEffect)(() => {
@@ -8532,7 +8594,7 @@ function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, on
 		children: [
 			/* @__PURE__ */ (0, C.jsxs)("header", {
 				className: "site-header",
-				children: [/* @__PURE__ */ (0, C.jsx)(re, {}), /* @__PURE__ */ (0, C.jsx)("button", {
+				children: [/* @__PURE__ */ (0, C.jsx)(w, {}), /* @__PURE__ */ (0, C.jsx)("button", {
 					type: "button",
 					className: "button secondary",
 					onClick: i,
@@ -8603,7 +8665,7 @@ function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, on
 					})]
 				}), /* @__PURE__ */ (0, C.jsx)("ul", {
 					className: "score-list",
-					children: s.map((e) => /* @__PURE__ */ (0, C.jsx)(ie, {
+					children: s.map((e) => /* @__PURE__ */ (0, C.jsx)(ae, {
 						player: e,
 						isLeader: d?.id === e.id
 					}, e.id))
@@ -8623,13 +8685,13 @@ function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, on
 					})]
 				}), /* @__PURE__ */ (0, C.jsx)("ul", {
 					className: "score-list",
-					children: c.map((e) => /* @__PURE__ */ (0, C.jsx)(ie, {
+					children: c.map((e) => /* @__PURE__ */ (0, C.jsx)(ae, {
 						player: e,
 						isLeader: !1
 					}, e.id))
 				})]
 			}),
-			/* @__PURE__ */ (0, C.jsx)(ae, {
+			/* @__PURE__ */ (0, C.jsx)(re, {
 				game: e,
 				onUndo: a
 			}),
@@ -8676,16 +8738,16 @@ function ce() {
 	function te(e) {
 		x(d, e), t(e);
 	}
-	function ie() {
+	function re() {
 		S(!0), s(!1), window.scrollTo(0, 0);
 	}
 	function ae(e) {
-		x(f, e), r(e), te(m(e)), ie();
+		x(f, e), r(e), te(m(e)), re();
 	}
 	function ce(t, n) {
 		if (!e) return;
 		let r = g(e, t, n);
-		r && (te(r.game), h(r.eliminated), r.game.finished && u("celebrate"), ie());
+		r && (te(r.game), h(r.eliminated), r.game.finished && u("celebrate"), re());
 	}
 	function le() {
 		e && r(e.players.map(({ name: e }) => e)), te(null), h([]), u(null), S(!1), window.scrollTo(0, 0);
@@ -8694,14 +8756,14 @@ function ce() {
 		className: "shell",
 		children: [/* @__PURE__ */ (0, C.jsx)("header", {
 			className: "site-header",
-			children: /* @__PURE__ */ (0, C.jsx)(re, {})
+			children: /* @__PURE__ */ (0, C.jsx)(w, {})
 		}), /* @__PURE__ */ (0, C.jsx)("p", {
 			className: "muted",
 			role: "status",
 			children: "Abrindo a mesa…"
 		})]
 	});
-	if (!e) return /* @__PURE__ */ (0, C.jsx)(w, {
+	if (!e) return /* @__PURE__ */ (0, C.jsx)(ie, {
 		initialNames: n,
 		onStart: ae
 	});
@@ -8709,7 +8771,7 @@ function ce() {
 	return o ? /* @__PURE__ */ (0, C.jsx)(ne, {
 		players: ue,
 		round: e.rounds.length + 1,
-		onClose: ie,
+		onClose: re,
 		onSave: ce
 	}) : /* @__PURE__ */ (0, C.jsxs)(C.Fragment, { children: [
 		/* @__PURE__ */ (0, C.jsx)(oe, {

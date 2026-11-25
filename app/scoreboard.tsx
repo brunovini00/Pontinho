@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { getLeader, INITIAL_POINTS } from "./game";
 import type { Game, Player } from "./game";
+import RoundHistory from "./round-history";
 import { Brand } from "./setup";
 
 type Props = {
@@ -31,38 +32,6 @@ function PlayerRow({ player, isLeader }: { player: Player; isLeader: boolean }) 
       </div>
       <div className="score-value"><strong>{player.score}</strong><span>pts</span></div>
     </li>
-  );
-}
-
-function History({ game, onUndo }: { game: Game; onUndo: () => void }) {
-  const names = new Map(game.players.map(({ id, name }) => [id, name]));
-  return (
-    <details className="history">
-      <summary>
-        <span>Histórico de rodadas <span className="history-count">{game.rounds.length}</span></span>
-        <span className="chevron" aria-hidden="true" />
-      </summary>
-      <div className="history-body">
-        {game.rounds.length === 0 ? <p className="muted">Os resultados aparecem aqui depois da primeira rodada.</p> : (
-          <>
-            <button type="button" className="button secondary undo-button" onClick={onUndo}>Desfazer última rodada</button>
-            <ol className="history-list" reversed>
-              {game.rounds.slice().reverse().map((round, index) => (
-                <li key={round.id}>
-                  <span>Rodada {game.rounds.length - index}</span>
-                  <strong>{names.get(round.winnerId)} venceu</strong>
-                  <ul>
-                    {Object.entries(round.losses).filter(([id, loss]) => id !== round.winnerId && loss > 0).map(([id, loss]) => (
-                      <li key={id}>{names.get(id)} <b>−{loss}</b></li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ol>
-          </>
-        )}
-      </div>
-    </details>
   );
 }
 
@@ -123,7 +92,7 @@ export default function Scoreboard({ game, eliminated, focusAction, onRound, onR
           <ul className="score-list">{out.map((player) => <PlayerRow key={player.id} player={player} isLeader={false} />)}</ul>
         </section>
       )}
-      <History game={game} onUndo={onUndo} />
+      <RoundHistory game={game} onUndo={onUndo} />
       {!game.finished && (
         <div className="score-dock">
           <button type="button" className="button primary" onClick={onRound}>Registrar resultado</button>
