@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { parseLoss } from "./game";
+import { limitLossInput, parseLoss } from "./game";
 import type { Player } from "./game";
+import ScreenShuffle from "./screen-shuffle";
 
 const LOSS_STEP = 5;
 
@@ -43,6 +44,7 @@ export default function RoundForm({ players, round, onClose, onSave }: {
 
   return (
     <main className={`shell round-screen ${scoring ? "round-losses" : ""}`}>
+      <ScreenShuffle key={scoring ? "losses" : "winner"} />
       <header className="round-header">
         <button type="button" className="button subtle" onClick={() => scoring ? setScoring(false) : onClose()}>
           {scoring ? "Voltar" : "Cancelar"}
@@ -107,7 +109,7 @@ export default function RoundForm({ players, round, onClose, onSave }: {
                       <label htmlFor={`loss-${player.id}`}>{player.name}</label>
                       <small id={hintId}>
                         <span className="loss-check" aria-hidden="true" />
-                        {invalid ? `Use de 1 a ${player.score}` : parsed === player.score ? "Será eliminado" : `${player.score} pts na mesa`}
+                        {invalid ? `Use de 1 a ${player.score}` : parsed === player.score ? `Elimina com ${player.score} pts` : `${player.score} pts na mesa`}
                       </small>
                     </div>
                     <div className="loss-control">
@@ -118,14 +120,13 @@ export default function RoundForm({ players, round, onClose, onSave }: {
                         inputMode="numeric"
                         autoComplete="off"
                         pattern="[0-9]*"
-                        maxLength={3}
                         placeholder="—"
                         aria-label={`Pontos perdidos por ${player.name}`}
                         aria-describedby={hintId}
                         aria-invalid={invalid || undefined}
                         value={value}
                         onFocus={(event) => event.currentTarget.select()}
-                        onChange={(event) => updateLoss(player.id, event.target.value)}
+                        onChange={(event) => updateLoss(player.id, limitLossInput(event.target.value, player.score))}
                       />
                       <button type="button" className="step-button" onClick={() => adjust(player, 1)} disabled={parsed === player.score} aria-label={`Aumentar perda de ${player.name}`}><span aria-hidden="true">+</span></button>
                     </div>

@@ -16,7 +16,7 @@ export default function Home() {
   const [roundOpen, setRoundOpen] = useState(false);
   const [overlay, setOverlay] = useState<"reset" | "celebrate" | null>(null);
   const [roundResult, setRoundResult] = useState<{ eliminated: string[] } | null>(null);
-  const [focusScore, setFocusScore] = useState(false);
+  const [focusScreen, setFocusScreen] = useState(false);
 
   useEffect(() => {
     setGame(restoreGame(readStorage(GAME_KEY)));
@@ -30,7 +30,7 @@ export default function Home() {
   }
 
   function goToScoreboard() {
-    setFocusScore(true);
+    setFocusScreen(true);
     setRoundOpen(false);
     window.scrollTo(0, 0);
   }
@@ -57,12 +57,12 @@ export default function Home() {
     saveGame(null);
     setRoundResult(null);
     setOverlay(null);
-    setFocusScore(false);
+    setFocusScreen(true);
     window.scrollTo(0, 0);
   }
 
   if (!ready) return <main className="shell"><header className="site-header"><Brand /></header><p className="muted" role="status">Abrindo a mesa…</p></main>;
-  if (!game) return <Setup initialNames={names} onStart={startGame} />;
+  if (!game) return <Setup initialNames={names} focusTitle={focusScreen} onStart={startGame} />;
 
   const active = game.players.filter(({ active }) => active);
   const champion = game.finished ? active[0] : undefined;
@@ -73,10 +73,10 @@ export default function Home() {
       <Scoreboard
         game={game}
         roundResult={roundResult}
-        focusAction={focusScore && overlay !== "celebrate"}
+        focusAction={focusScreen && overlay !== "celebrate"}
         onRound={() => {
           setRoundResult(null);
-          setFocusScore(false);
+          setFocusScreen(false);
           setRoundOpen(true);
         }}
         onReset={() => setOverlay("reset")}
@@ -85,7 +85,7 @@ export default function Home() {
           setRoundResult(null);
         }}
         onCelebrate={() => {
-          setFocusScore(false);
+          setFocusScreen(false);
           setOverlay("celebrate");
         }}
       />

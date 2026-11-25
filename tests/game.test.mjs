@@ -1,6 +1,25 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { applyRound, createGame, getLeader, restoreGame, undoRound } from "../app/game.ts";
+import { applyRound, createGame, getLeader, limitLossInput, restoreGame, undoRound } from "../app/game.ts";
+
+test("limita perdas digitadas ou coladas ao saldo atual, sem aceitar valores inválidos", () => {
+  for (const [input, balance, expected] of [
+    ["200", 50, "50"],
+    ["300", 100, "100"],
+    ["100", 50, "50"],
+    ["50", 50, "50"],
+    ["0000200", 50, "50"],
+    ["99999999999999999999", 1, "1"],
+    ["25", 50, "25"],
+    ["", 50, ""],
+    ["0", 50, "0"],
+    ["-200", 50, "-200"],
+    ["50.5", 50, "50.5"],
+    ["2e2", 50, "2e2"],
+  ]) {
+    assert.equal(limitLossInput(input, balance), expected, `Entrada: ${input}, saldo: ${balance}`);
+  }
+});
 
 test("cada adversário precisa de uma perda inteira positiva dentro do saldo", () => {
   const game = createGame(["Ana", "Beto", "Caio"]);

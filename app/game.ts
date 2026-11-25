@@ -7,6 +7,7 @@ export const MAX_PLAYERS = 10;
 export const NAME_LIMIT = 20;
 export const GAME_KEY = "pontinho-game-v1";
 export const PLAYERS_KEY = "pontinho-last-players-v1";
+const WHOLE_POINTS = /^\d+$/;
 
 function id() {
   return Math.random().toString(36).slice(2, 10);
@@ -21,8 +22,15 @@ export function createGame(names: string[]): Game {
   };
 }
 
+export function limitLossInput(value: string, balance: number) {
+  if (WHOLE_POINTS.test(value) && Number(value) > Math.floor(balance)) {
+    return String(Math.floor(balance));
+  }
+  return value;
+}
+
 export function parseLoss(value: string | undefined, balance: number) {
-  if (!value || !/^\d+$/.test(value)) return null;
+  if (!value || !WHOLE_POINTS.test(value)) return null;
   const loss = Number(value);
   return Number.isInteger(loss) && loss > 0 && loss <= balance ? loss : null;
 }

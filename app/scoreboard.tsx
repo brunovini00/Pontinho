@@ -4,6 +4,7 @@ import { getLeader, INITIAL_POINTS } from "./game";
 import type { Game, Player } from "./game";
 import RoundHistory from "./round-history";
 import RoundResult from "./round-result";
+import ScreenShuffle from "./screen-shuffle";
 import { Brand } from "./setup";
 
 type Props = {
@@ -56,6 +57,7 @@ export default function Scoreboard({ game, roundResult, focusAction, onRound, on
 
   return (
     <main className={`shell scoreboard ${game.finished ? "scoreboard-finished" : ""}`}>
+      <ScreenShuffle key={game.finished ? "finished" : "playing"} />
       <header className="site-header">
         <Brand />
         <button type="button" className="button secondary" onClick={onReset}>Nova partida</button>

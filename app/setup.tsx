@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { INITIAL_POINTS, MAX_PLAYERS, NAME_LIMIT } from "./game";
+import ScreenShuffle from "./screen-shuffle";
 
 export function Brand() {
   return (
@@ -11,14 +12,20 @@ export function Brand() {
   );
 }
 
-export default function Setup({ initialNames, onStart }: {
+export default function Setup({ initialNames, focusTitle, onStart }: {
   initialNames: string[];
+  focusTitle: boolean;
   onStart: (names: string[]) => void;
 }) {
   const [names, setNames] = useState(() => initialNames.map((name, id) => ({ name, id })));
   const nextId = useRef(names.length);
   const newField = useRef<number | null>(null);
+  const title = useRef<HTMLHeadingElement>(null);
   const count = names.filter(({ name }) => name.trim()).length;
+
+  useEffect(() => {
+    if (focusTitle) title.current?.focus({ preventScroll: true });
+  }, [focusTitle]);
 
   function addPlayer() {
     if (names.length >= MAX_PLAYERS) return;
@@ -34,10 +41,11 @@ export default function Setup({ initialNames, onStart }: {
 
   return (
     <main className="shell setup">
+      <ScreenShuffle />
       <header className="site-header"><Brand /></header>
       <section className="table-banner" aria-labelledby="setup-title">
         <div className="banner-copy">
-          <h1 id="setup-title">Monte sua<br />mesa.</h1>
+          <h1 ref={title} id="setup-title" tabIndex={-1}>Monte sua<br />mesa.</h1>
           <p>O último jogador na mesa vence.</p>
         </div>
         <div className="deck" aria-hidden="true">
