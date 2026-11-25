@@ -1,38 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { applyRound, createGame, GAME_KEY, PLAYERS_KEY, readStorage, rememberedNames, restoreGame, undoRound, writeStorage } from "./game";
 import type { Game } from "./game";
+import Dialog from "./dialog";
 import RoundForm from "./round-form";
+import { ChampionCards, eliminationMessage } from "./round-result";
 import Scoreboard from "./scoreboard";
 import Setup, { Brand } from "./setup";
-
-function Dialog({ children, onClose, className = "" }: {
-  children: ReactNode;
-  onClose: () => void;
-  className?: string;
-}) {
-  const dialog = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const element = dialog.current;
-    element?.showModal();
-    return () => { element?.close(); };
-  }, []);
-
-  return (
-    <dialog
-      ref={dialog}
-      className={`dialog ${className}`}
-      aria-labelledby="dialog-title"
-      onCancel={(event) => {
-        event.preventDefault();
-        onClose();
-      }}
-    >{children}</dialog>
-  );
-}
 
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
@@ -40,7 +15,7 @@ export default function Home() {
   const [ready, setReady] = useState(false);
   const [roundOpen, setRoundOpen] = useState(false);
   const [overlay, setOverlay] = useState<"reset" | "celebrate" | null>(null);
-  const [eliminated, setEliminated] = useState<string[]>([]);
+  const [roundResult, setRoundResult] = useState<{ eliminated: string[] } | null>(null);
   const [focusScore, setFocusScore] = useState(false);
 
   useEffect(() => {
@@ -72,7 +47,7 @@ export default function Home() {
     const result = applyRound(game, winnerId, losses);
     if (!result) return;
     saveGame(result.game);
-    setEliminated(result.eliminated);
+    setRoundResult({ eliminated: result.eliminated });
     if (result.game.finished) setOverlay("celebrate");
     goToScoreboard();
   }
@@ -80,7 +55,7 @@ export default function Home() {
   function resetGame() {
     if (game) setNames(game.players.map(({ name }) => name));
     saveGame(null);
-    setEliminated([]);
+    setRoundResult(null);
     setOverlay(null);
     setFocusScore(false);
     window.scrollTo(0, 0);
@@ -97,23 +72,29 @@ export default function Home() {
     <>
       <Scoreboard
         game={game}
-        eliminated={eliminated}
-        focusAction={focusScore}
+        roundResult={roundResult}
+        focusAction={focusScore && overlay !== "celebrate"}
         onRound={() => {
+          setRoundResult(null);
           setFocusScore(false);
           setRoundOpen(true);
         }}
         onReset={() => setOverlay("reset")}
         onUndo={() => {
           saveGame(undoRound(game));
-          setEliminated([]);
+          setRoundResult(null);
         }}
-        onCelebrate={() => setOverlay("celebrate")}
+        onCelebrate={() => {
+          setFocusScore(false);
+          setOverlay("celebrate");
+        }}
       />
       {overlay === "reset" && (
-        <Dialog onClose={() => setOverlay(null)}>
-          <h2 id="dialog-title">Começar outra partida?</h2>
-          <p>O placar e o histórico atuais serão apagados. Os nomes ficam prontos para a próxima mesa.</p>
+        <Dialog
+          title="Começar outra partida?"
+          description="O placar e o histórico atuais serão apagados. Os nomes ficam prontos para a próxima mesa."
+          onClose={() => setOverlay(null)}
+        >
           <div className="dialog-actions">
             <button className="button secondary" onClick={() => setOverlay(null)} autoFocus>Cancelar</button>
             <button className="button danger" onClick={resetGame}>Nova partida</button>
@@ -121,12 +102,23 @@ export default function Home() {
         </Dialog>
       )}
       {overlay === "celebrate" && champion && (
-        <Dialog onClose={() => setOverlay(null)} className="celebration">
-          <div className="celebration-deck" aria-hidden="true">
-            <span>♦</span><span>♠</span><span>♥</span>
-          </div>
-          <h2 id="dialog-title">{champion.name} venceu!</h2>
-          <p>Último na mesa com {champion.score} pontos.</p>
+        <Dialog
+          title={`${champion.name} venceu!`}
+          description={
+            <>
+              Último na mesa com {champion.score} pontos.
+              {!!roundResult?.eliminated.length && (
+                <span className="celebration-elimination">
+                  <span className="result-card result-card-out" aria-hidden="true"><span className="skull-mark" /></span>
+                  <span>{eliminationMessage(roundResult.eliminated)}</span>
+                </span>
+              )}
+            </>
+          }
+          visual={<ChampionCards />}
+          onClose={() => setOverlay(null)}
+          className="celebration"
+        >
           <button className="button primary" onClick={() => setOverlay(null)} autoFocus>Ver placar final</button>
         </Dialog>
       )}

@@ -2,11 +2,12 @@ import { useEffect } from "react";
 import { getLeader, INITIAL_POINTS } from "./game";
 import type { Game, Player } from "./game";
 import RoundHistory from "./round-history";
+import RoundResult from "./round-result";
 import { Brand } from "./setup";
 
 type Props = {
   game: Game;
-  eliminated: string[];
+  roundResult: { eliminated: string[] } | null;
   focusAction: boolean;
   onRound: () => void;
   onReset: () => void;
@@ -35,7 +36,7 @@ function PlayerRow({ player, isLeader }: { player: Player; isLeader: boolean }) 
   );
 }
 
-export default function Scoreboard({ game, eliminated, focusAction, onRound, onReset, onUndo, onCelebrate }: Props) {
+export default function Scoreboard({ game, roundResult, focusAction, onRound, onReset, onUndo, onCelebrate }: Props) {
   const active = game.players.filter((player) => player.active).sort((a, b) => b.score - a.score);
   const out = game.players.filter((player) => !player.active);
   const champion = game.finished ? active[0] : undefined;
@@ -43,7 +44,6 @@ export default function Scoreboard({ game, eliminated, focusAction, onRound, onR
   const roundNumber = game.rounds.length + (game.finished ? 0 : 1);
   const last = game.rounds.at(-1);
   const lastWinner = game.players.find(({ id }) => id === last?.winnerId);
-  const formatNames = new Intl.ListFormat("pt-BR");
 
   useEffect(() => {
     if (focusAction) document.getElementById("score-title")?.focus({ preventScroll: true });
@@ -69,16 +69,13 @@ export default function Scoreboard({ game, eliminated, focusAction, onRound, onR
           <span className="table-suit" aria-hidden="true">♠</span>
         </section>
       )}
-      {eliminated.length > 0 && !game.finished && (
-        <p className="elimination-note" role="status">
-          <span className="skull-mark" aria-hidden="true" />
-          <span><strong>{formatNames.format(eliminated)}</strong> {eliminated.length === 1 ? "saiu da mesa." : "saíram da mesa."}</span>
-        </p>
+      {!game.finished && roundResult && lastWinner && (
+        <RoundResult key={last?.id} winner={lastWinner.name} eliminated={roundResult.eliminated} />
       )}
       <section className="score-section" aria-labelledby="active-title">
         <div className="section-heading">
           <div><h2 id="active-title">{champion ? "Resultado final" : "Na mesa"}</h2>
-            {!game.finished && lastWinner && <p>Última rodada: {lastWinner.name} venceu</p>}
+            {!game.finished && !roundResult && lastWinner && <p>Última rodada: {lastWinner.name} venceu</p>}
           </div>
           <strong className="count">{active.length}/{game.players.length}</strong>
         </div>

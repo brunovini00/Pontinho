@@ -8125,8 +8125,42 @@ var S = /* @__PURE__ */ e(((e) => {
 	e.Fragment = n, e.jsx = r, e.jsxs = r;
 })), C = (/* @__PURE__ */ e(((e, t) => {
 	t.exports = S();
-})))(), te = 5;
-function ne({ players: e, round: t, onClose: n, onSave: r }) {
+})))();
+function te({ title: e, description: t, visual: n, children: r, onClose: i, className: a = "" }) {
+	let o = (0, l.useRef)(null), s = (0, l.useId)();
+	return (0, l.useLayoutEffect)(() => {
+		let e = o.current;
+		if (!e) return;
+		let t = document.activeElement;
+		return e.showModal(), () => {
+			e.close(), t instanceof HTMLElement && t.isConnected && t.focus({ preventScroll: !0 });
+		};
+	}, []), /* @__PURE__ */ (0, C.jsxs)("dialog", {
+		ref: o,
+		className: `dialog ${a}`,
+		"aria-labelledby": `${s}-title`,
+		"aria-describedby": `${s}-description`,
+		onCancel: (e) => {
+			e.preventDefault(), i();
+		},
+		children: [
+			n,
+			/* @__PURE__ */ (0, C.jsx)("h2", {
+				id: `${s}-title`,
+				children: e
+			}),
+			/* @__PURE__ */ (0, C.jsx)("p", {
+				id: `${s}-description`,
+				children: t
+			}),
+			r
+		]
+	});
+}
+//#endregion
+//#region app/round-form.tsx
+var ne = 5;
+function re({ players: e, round: t, onClose: n, onSave: r }) {
 	let [i, a] = (0, l.useState)(""), [o, s] = (0, l.useState)({}), [c, u] = (0, l.useState)(!1), d = (0, l.useRef)(null), f = e.find(({ id: e }) => e === i), p = e.filter(({ id: e }) => e !== i), m = p.filter((e) => h(o[e.id], e.score) !== null).length, g = !!f && m === p.length;
 	(0, l.useEffect)(() => {
 		d.current?.focus({ preventScroll: !0 }), window.scrollTo(0, 0);
@@ -8138,7 +8172,7 @@ function ne({ players: e, round: t, onClose: n, onSave: r }) {
 		}));
 	}
 	function v(e, t) {
-		let n = h(o[e.id], e.score) ?? 0, r = Math.max(1, Math.min(e.score, n + t * te));
+		let n = h(o[e.id], e.score) ?? 0, r = Math.max(1, Math.min(e.score, n + t * ne));
 		_(e.id, String(r));
 	}
 	function y(e) {
@@ -8309,106 +8343,183 @@ function ne({ players: e, round: t, onClose: n, onSave: r }) {
 	});
 }
 //#endregion
+//#region app/round-result.tsx
+var w = new Intl.ListFormat("pt-BR");
+function ie(e) {
+	let t = e.length === 1 ? "saiu" : "saíram";
+	return `${w.format(e)} ${t} da mesa.`;
+}
+function ae({ winner: e, eliminated: t }) {
+	return /* @__PURE__ */ (0, C.jsxs)("div", {
+		className: "round-result",
+		role: "status",
+		children: [/* @__PURE__ */ (0, C.jsxs)("p", {
+			className: "result-note",
+			children: [/* @__PURE__ */ (0, C.jsx)("span", {
+				className: "result-card",
+				"aria-hidden": "true",
+				children: "♠"
+			}), /* @__PURE__ */ (0, C.jsxs)("span", { children: [/* @__PURE__ */ (0, C.jsxs)("strong", { children: [e, " venceu"] }), " a rodada."] })]
+		}), t.length > 0 && /* @__PURE__ */ (0, C.jsxs)("p", {
+			className: "result-note elimination-note",
+			children: [/* @__PURE__ */ (0, C.jsx)("span", {
+				className: "result-card result-card-out",
+				"aria-hidden": "true",
+				children: /* @__PURE__ */ (0, C.jsx)("span", { className: "skull-mark" })
+			}), /* @__PURE__ */ (0, C.jsx)("span", { children: ie(t) })]
+		})]
+	});
+}
+function oe() {
+	return /* @__PURE__ */ (0, C.jsxs)("div", {
+		className: "celebration-deck",
+		"aria-hidden": "true",
+		children: [
+			/* @__PURE__ */ (0, C.jsx)("div", { className: "celebration-ring" }),
+			/* @__PURE__ */ (0, C.jsxs)("div", {
+				className: "celebration-card",
+				children: [/* @__PURE__ */ (0, C.jsx)("small", { children: "K" }), "♦"]
+			}),
+			/* @__PURE__ */ (0, C.jsxs)("div", {
+				className: "celebration-card",
+				children: [/* @__PURE__ */ (0, C.jsx)("small", { children: "Q" }), "♥"]
+			}),
+			/* @__PURE__ */ (0, C.jsxs)("div", {
+				className: "celebration-card",
+				children: [/* @__PURE__ */ (0, C.jsx)("small", { children: "A" }), "♠"]
+			})
+		]
+	});
+}
+//#endregion
 //#region app/round-history.tsx
-function re({ game: e, onUndo: t }) {
-	let [n, r] = (0, l.useState)(!1), [i, a] = (0, l.useState)(), o = (0, l.useRef)(null), s = (0, l.useId)(), c = e.rounds.length, u = new Map(e.players.map(({ id: e, name: t }) => [e, t]));
-	function d() {
-		c === 1 && o.current?.focus({ preventScroll: !0 }), t(), a(c);
+function se({ game: e, onUndo: t }) {
+	let [n, r] = (0, l.useState)(!1), [i, a] = (0, l.useState)(), [o, s] = (0, l.useState)(), c = (0, l.useRef)(null), u = (0, l.useId)(), d = e.rounds.length, f = e.rounds.at(-1), p = new Map(e.players.map(({ id: e, name: t }) => [e, t]));
+	(0, l.useEffect)(() => {
+		o !== void 0 && d === 0 && c.current?.focus({ preventScroll: !0 });
+	}, [d, o]);
+	function m() {
+		f?.id === i && (t(), s(d)), a(void 0);
 	}
 	return /* @__PURE__ */ (0, C.jsxs)("section", {
 		className: "history",
-		children: [/* @__PURE__ */ (0, C.jsxs)("button", {
-			ref: o,
-			type: "button",
-			id: `${s}-toggle`,
-			className: "history-toggle",
-			"aria-expanded": n,
-			"aria-controls": s,
-			onClick: () => r((e) => !e),
-			children: [
-				/* @__PURE__ */ (0, C.jsx)("span", {
-					className: "history-icon",
-					"aria-hidden": "true"
-				}),
-				/* @__PURE__ */ (0, C.jsxs)("span", {
-					className: "history-label",
-					children: [
-						"Histórico de rodadas",
-						/* @__PURE__ */ (0, C.jsx)("span", {
-							className: "history-count",
-							"aria-hidden": "true",
-							children: c
-						}),
-						/* @__PURE__ */ (0, C.jsxs)("span", {
-							className: "sr-only",
-							children: [
-								", ",
-								c,
-								" ",
-								c === 1 ? "rodada" : "rodadas"
-							]
-						})
-					]
-				}),
-				/* @__PURE__ */ (0, C.jsx)("span", {
-					className: "chevron",
-					"aria-hidden": "true"
-				})
-			]
-		}), /* @__PURE__ */ (0, C.jsx)("div", {
-			className: "history-panel",
-			"data-open": n,
-			inert: !n,
-			"aria-hidden": !n,
-			id: s,
-			role: "region",
-			"aria-labelledby": `${s}-toggle`,
-			children: /* @__PURE__ */ (0, C.jsx)("div", {
-				className: "history-clip",
-				children: /* @__PURE__ */ (0, C.jsxs)("div", {
-					className: "history-body",
-					children: [/* @__PURE__ */ (0, C.jsx)("div", {
-						className: "history-feedback",
-						role: "status",
-						children: i !== void 0 && /* @__PURE__ */ (0, C.jsxs)("p", { children: [
-							"Rodada ",
-							i,
-							" desfeita. Placar restaurado."
-						] }, i)
-					}), c === 0 ? /* @__PURE__ */ (0, C.jsx)("p", {
-						className: "muted",
-						children: "Os resultados aparecem aqui depois da primeira rodada."
-					}) : /* @__PURE__ */ (0, C.jsxs)(C.Fragment, { children: [/* @__PURE__ */ (0, C.jsx)("button", {
-						type: "button",
-						className: "button secondary undo-button",
-						onClick: d,
-						children: "Desfazer última rodada"
-					}), /* @__PURE__ */ (0, C.jsx)("ol", {
-						className: "history-list",
-						reversed: !0,
-						children: e.rounds.slice().reverse().map((e, t) => /* @__PURE__ */ (0, C.jsxs)("li", {
-							className: "history-round",
-							children: [/* @__PURE__ */ (0, C.jsxs)("div", {
-								className: "history-round-header",
-								children: [/* @__PURE__ */ (0, C.jsxs)("strong", { children: [u.get(e.winnerId), " venceu"] }), /* @__PURE__ */ (0, C.jsxs)("span", { children: ["Rodada ", c - t] })]
-							}), /* @__PURE__ */ (0, C.jsx)("ul", {
-								className: "history-losses",
-								children: Object.entries(e.losses).filter(([t, n]) => t !== e.winnerId && n > 0).map(([e, t]) => /* @__PURE__ */ (0, C.jsxs)("li", { children: [
-									/* @__PURE__ */ (0, C.jsx)("span", { children: u.get(e) }),
+		children: [
+			/* @__PURE__ */ (0, C.jsxs)("button", {
+				ref: c,
+				type: "button",
+				id: `${u}-toggle`,
+				className: "history-toggle",
+				"aria-expanded": n,
+				"aria-controls": u,
+				onClick: () => r((e) => !e),
+				children: [
+					/* @__PURE__ */ (0, C.jsx)("span", {
+						className: "history-icon",
+						"aria-hidden": "true"
+					}),
+					/* @__PURE__ */ (0, C.jsxs)("span", {
+						className: "history-label",
+						children: [
+							"Histórico de rodadas",
+							/* @__PURE__ */ (0, C.jsx)("span", {
+								className: "history-count",
+								"aria-hidden": "true",
+								children: d
+							}),
+							/* @__PURE__ */ (0, C.jsxs)("span", {
+								className: "sr-only",
+								children: [
+									", ",
+									d,
 									" ",
-									/* @__PURE__ */ (0, C.jsxs)("b", { children: ["−", t] })
-								] }, e))
-							})]
-						}, e.id))
-					})] })]
+									d === 1 ? "rodada" : "rodadas"
+								]
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, C.jsx)("span", {
+						className: "chevron",
+						"aria-hidden": "true"
+					})
+				]
+			}),
+			/* @__PURE__ */ (0, C.jsx)("div", {
+				className: "history-panel",
+				"data-open": n,
+				inert: !n,
+				"aria-hidden": !n,
+				id: u,
+				role: "region",
+				"aria-labelledby": `${u}-toggle`,
+				children: /* @__PURE__ */ (0, C.jsx)("div", {
+					className: "history-clip",
+					children: /* @__PURE__ */ (0, C.jsxs)("div", {
+						className: "history-body",
+						children: [/* @__PURE__ */ (0, C.jsx)("div", {
+							className: "history-feedback",
+							role: "status",
+							children: o !== void 0 && /* @__PURE__ */ (0, C.jsxs)("p", { children: [
+								"Rodada ",
+								o,
+								" desfeita. Placar restaurado."
+							] }, o)
+						}), d === 0 ? /* @__PURE__ */ (0, C.jsx)("p", {
+							className: "muted",
+							children: "Os resultados aparecem aqui depois da primeira rodada."
+						}) : /* @__PURE__ */ (0, C.jsxs)(C.Fragment, { children: [/* @__PURE__ */ (0, C.jsx)("button", {
+							type: "button",
+							className: "button secondary undo-button",
+							onClick: (e) => {
+								e.currentTarget.focus({ preventScroll: !0 }), a(f?.id);
+							},
+							children: "Desfazer última rodada"
+						}), /* @__PURE__ */ (0, C.jsx)("ol", {
+							className: "history-list",
+							reversed: !0,
+							children: e.rounds.slice().reverse().map((e, t) => /* @__PURE__ */ (0, C.jsxs)("li", {
+								className: "history-round",
+								children: [/* @__PURE__ */ (0, C.jsxs)("div", {
+									className: "history-round-header",
+									children: [/* @__PURE__ */ (0, C.jsxs)("strong", { children: [p.get(e.winnerId), " venceu"] }), /* @__PURE__ */ (0, C.jsxs)("span", { children: ["Rodada ", d - t] })]
+								}), /* @__PURE__ */ (0, C.jsx)("ul", {
+									className: "history-losses",
+									children: Object.entries(e.losses).filter(([t, n]) => t !== e.winnerId && n > 0).map(([e, t]) => /* @__PURE__ */ (0, C.jsxs)("li", { children: [
+										/* @__PURE__ */ (0, C.jsx)("span", { children: p.get(e) }),
+										" ",
+										/* @__PURE__ */ (0, C.jsxs)("b", { children: ["−", t] })
+									] }, e))
+								})]
+							}, e.id))
+						})] })]
+					})
+				})
+			}),
+			i && /* @__PURE__ */ (0, C.jsx)(te, {
+				title: `Desfazer a rodada ${d}?`,
+				description: "Os pontos perdidos nesta rodada voltam ao placar. Quem foi eliminado nela volta à mesa.",
+				onClose: () => a(void 0),
+				children: /* @__PURE__ */ (0, C.jsxs)("div", {
+					className: "dialog-actions",
+					children: [/* @__PURE__ */ (0, C.jsx)("button", {
+						type: "button",
+						className: "button secondary",
+						onClick: () => a(void 0),
+						autoFocus: !0,
+						children: "Cancelar"
+					}), /* @__PURE__ */ (0, C.jsx)("button", {
+						type: "button",
+						className: "button danger",
+						onClick: m,
+						children: "Desfazer rodada"
+					})]
 				})
 			})
-		})]
+		]
 	});
 }
 //#endregion
 //#region app/setup.tsx
-function w() {
+function ce() {
 	return /* @__PURE__ */ (0, C.jsxs)("div", {
 		className: "brand",
 		children: [/* @__PURE__ */ (0, C.jsx)("span", {
@@ -8421,7 +8532,7 @@ function w() {
 		})] })]
 	});
 }
-function ie({ initialNames: e, onStart: t }) {
+function le({ initialNames: e, onStart: t }) {
 	let [n, r] = (0, l.useState)(() => e.map((e, t) => ({
 		name: e,
 		id: t
@@ -8442,7 +8553,7 @@ function ie({ initialNames: e, onStart: t }) {
 		children: [
 			/* @__PURE__ */ (0, C.jsx)("header", {
 				className: "site-header",
-				children: /* @__PURE__ */ (0, C.jsx)(w, {})
+				children: /* @__PURE__ */ (0, C.jsx)(ce, {})
 			}),
 			/* @__PURE__ */ (0, C.jsxs)("section", {
 				className: "table-banner",
@@ -8551,7 +8662,7 @@ function ie({ initialNames: e, onStart: t }) {
 }
 //#endregion
 //#region app/scoreboard.tsx
-function ae({ player: e, isLeader: t }) {
+function ue({ player: e, isLeader: t }) {
 	return /* @__PURE__ */ (0, C.jsxs)("li", {
 		className: "score-row",
 		"data-out": !e.active,
@@ -8585,8 +8696,8 @@ function ae({ player: e, isLeader: t }) {
 		]
 	});
 }
-function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, onUndo: a, onCelebrate: o }) {
-	let s = e.players.filter((e) => e.active).sort((e, t) => t.score - e.score), c = e.players.filter((e) => !e.active), u = e.finished ? s[0] : void 0, d = v(e), f = e.rounds.length + +!e.finished, p = e.rounds.at(-1), m = e.players.find(({ id: e }) => e === p?.winnerId), h = new Intl.ListFormat("pt-BR");
+function T({ game: e, roundResult: t, focusAction: n, onRound: r, onReset: i, onUndo: a, onCelebrate: o }) {
+	let s = e.players.filter((e) => e.active).sort((e, t) => t.score - e.score), c = e.players.filter((e) => !e.active), u = e.finished ? s[0] : void 0, d = v(e), f = e.rounds.length + +!e.finished, p = e.rounds.at(-1), m = e.players.find(({ id: e }) => e === p?.winnerId);
 	return (0, l.useEffect)(() => {
 		n && document.getElementById("score-title")?.focus({ preventScroll: !0 });
 	}, [n]), /* @__PURE__ */ (0, C.jsxs)("main", {
@@ -8594,7 +8705,7 @@ function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, on
 		children: [
 			/* @__PURE__ */ (0, C.jsxs)("header", {
 				className: "site-header",
-				children: [/* @__PURE__ */ (0, C.jsx)(w, {}), /* @__PURE__ */ (0, C.jsx)("button", {
+				children: [/* @__PURE__ */ (0, C.jsx)(ce, {}), /* @__PURE__ */ (0, C.jsx)("button", {
 					type: "button",
 					className: "button secondary",
 					onClick: i,
@@ -8631,18 +8742,10 @@ function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, on
 					children: "♠"
 				})]
 			}),
-			t.length > 0 && !e.finished && /* @__PURE__ */ (0, C.jsxs)("p", {
-				className: "elimination-note",
-				role: "status",
-				children: [/* @__PURE__ */ (0, C.jsx)("span", {
-					className: "skull-mark",
-					"aria-hidden": "true"
-				}), /* @__PURE__ */ (0, C.jsxs)("span", { children: [
-					/* @__PURE__ */ (0, C.jsx)("strong", { children: h.format(t) }),
-					" ",
-					t.length === 1 ? "saiu da mesa." : "saíram da mesa."
-				] })]
-			}),
+			!e.finished && t && m && /* @__PURE__ */ (0, C.jsx)(ae, {
+				winner: m.name,
+				eliminated: t.eliminated
+			}, p?.id),
 			/* @__PURE__ */ (0, C.jsxs)("section", {
 				className: "score-section",
 				"aria-labelledby": "active-title",
@@ -8651,7 +8754,7 @@ function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, on
 					children: [/* @__PURE__ */ (0, C.jsxs)("div", { children: [/* @__PURE__ */ (0, C.jsx)("h2", {
 						id: "active-title",
 						children: u ? "Resultado final" : "Na mesa"
-					}), !e.finished && m && /* @__PURE__ */ (0, C.jsxs)("p", { children: [
+					}), !e.finished && !t && m && /* @__PURE__ */ (0, C.jsxs)("p", { children: [
 						"Última rodada: ",
 						m.name,
 						" venceu"
@@ -8665,7 +8768,7 @@ function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, on
 					})]
 				}), /* @__PURE__ */ (0, C.jsx)("ul", {
 					className: "score-list",
-					children: s.map((e) => /* @__PURE__ */ (0, C.jsx)(ae, {
+					children: s.map((e) => /* @__PURE__ */ (0, C.jsx)(ue, {
 						player: e,
 						isLeader: d?.id === e.id
 					}, e.id))
@@ -8685,13 +8788,13 @@ function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, on
 					})]
 				}), /* @__PURE__ */ (0, C.jsx)("ul", {
 					className: "score-list",
-					children: c.map((e) => /* @__PURE__ */ (0, C.jsx)(ae, {
+					children: c.map((e) => /* @__PURE__ */ (0, C.jsx)(ue, {
 						player: e,
 						isLeader: !1
 					}, e.id))
 				})]
 			}),
-			/* @__PURE__ */ (0, C.jsx)(re, {
+			/* @__PURE__ */ (0, C.jsx)(se, {
 				game: e,
 				onUndo: a
 			}),
@@ -8709,142 +8812,117 @@ function oe({ game: e, eliminated: t, focusAction: n, onRound: r, onReset: i, on
 }
 //#endregion
 //#region app/page.tsx
-function se({ children: e, onClose: t, className: n = "" }) {
-	let r = (0, l.useRef)(null);
-	return (0, l.useEffect)(() => {
-		let e = r.current;
-		return e?.showModal(), () => {
-			e?.close();
-		};
-	}, []), /* @__PURE__ */ (0, C.jsx)("dialog", {
-		ref: r,
-		className: `dialog ${n}`,
-		"aria-labelledby": "dialog-title",
-		onCancel: (e) => {
-			e.preventDefault(), t();
-		},
-		children: e
-	});
-}
-function ce() {
+function E() {
 	let [e, t] = (0, l.useState)(null), [n, r] = (0, l.useState)([
 		"",
 		"",
 		""
-	]), [i, a] = (0, l.useState)(!1), [o, s] = (0, l.useState)(!1), [c, u] = (0, l.useState)(null), [p, h] = (0, l.useState)([]), [v, S] = (0, l.useState)(!1);
+	]), [i, a] = (0, l.useState)(!1), [o, s] = (0, l.useState)(!1), [c, u] = (0, l.useState)(null), [p, h] = (0, l.useState)(null), [v, S] = (0, l.useState)(!1);
 	(0, l.useEffect)(() => {
 		t(y(b(d))), r(ee()), a(!0);
 	}, []);
-	function te(e) {
+	function ne(e) {
 		x(d, e), t(e);
 	}
-	function re() {
+	function w() {
 		S(!0), s(!1), window.scrollTo(0, 0);
 	}
 	function ae(e) {
-		x(f, e), r(e), te(m(e)), re();
+		x(f, e), r(e), ne(m(e)), w();
 	}
-	function ce(t, n) {
+	function se(t, n) {
 		if (!e) return;
 		let r = g(e, t, n);
-		r && (te(r.game), h(r.eliminated), r.game.finished && u("celebrate"), re());
+		r && (ne(r.game), h({ eliminated: r.eliminated }), r.game.finished && u("celebrate"), w());
 	}
-	function le() {
-		e && r(e.players.map(({ name: e }) => e)), te(null), h([]), u(null), S(!1), window.scrollTo(0, 0);
+	function ue() {
+		e && r(e.players.map(({ name: e }) => e)), ne(null), h(null), u(null), S(!1), window.scrollTo(0, 0);
 	}
 	if (!i) return /* @__PURE__ */ (0, C.jsxs)("main", {
 		className: "shell",
 		children: [/* @__PURE__ */ (0, C.jsx)("header", {
 			className: "site-header",
-			children: /* @__PURE__ */ (0, C.jsx)(w, {})
+			children: /* @__PURE__ */ (0, C.jsx)(ce, {})
 		}), /* @__PURE__ */ (0, C.jsx)("p", {
 			className: "muted",
 			role: "status",
 			children: "Abrindo a mesa…"
 		})]
 	});
-	if (!e) return /* @__PURE__ */ (0, C.jsx)(ie, {
+	if (!e) return /* @__PURE__ */ (0, C.jsx)(le, {
 		initialNames: n,
 		onStart: ae
 	});
-	let ue = e.players.filter(({ active: e }) => e), T = e.finished ? ue[0] : void 0;
-	return o ? /* @__PURE__ */ (0, C.jsx)(ne, {
-		players: ue,
+	let E = e.players.filter(({ active: e }) => e), de = e.finished ? E[0] : void 0;
+	return o ? /* @__PURE__ */ (0, C.jsx)(re, {
+		players: E,
 		round: e.rounds.length + 1,
-		onClose: re,
-		onSave: ce
+		onClose: w,
+		onSave: se
 	}) : /* @__PURE__ */ (0, C.jsxs)(C.Fragment, { children: [
-		/* @__PURE__ */ (0, C.jsx)(oe, {
+		/* @__PURE__ */ (0, C.jsx)(T, {
 			game: e,
-			eliminated: p,
-			focusAction: v,
+			roundResult: p,
+			focusAction: v && c !== "celebrate",
 			onRound: () => {
-				S(!1), s(!0);
+				h(null), S(!1), s(!0);
 			},
 			onReset: () => u("reset"),
 			onUndo: () => {
-				te(_(e)), h([]);
+				ne(_(e)), h(null);
 			},
-			onCelebrate: () => u("celebrate")
+			onCelebrate: () => {
+				S(!1), u("celebrate");
+			}
 		}),
-		c === "reset" && /* @__PURE__ */ (0, C.jsxs)(se, {
+		c === "reset" && /* @__PURE__ */ (0, C.jsx)(te, {
+			title: "Começar outra partida?",
+			description: "O placar e o histórico atuais serão apagados. Os nomes ficam prontos para a próxima mesa.",
 			onClose: () => u(null),
-			children: [
-				/* @__PURE__ */ (0, C.jsx)("h2", {
-					id: "dialog-title",
-					children: "Começar outra partida?"
-				}),
-				/* @__PURE__ */ (0, C.jsx)("p", { children: "O placar e o histórico atuais serão apagados. Os nomes ficam prontos para a próxima mesa." }),
-				/* @__PURE__ */ (0, C.jsxs)("div", {
-					className: "dialog-actions",
-					children: [/* @__PURE__ */ (0, C.jsx)("button", {
-						className: "button secondary",
-						onClick: () => u(null),
-						autoFocus: !0,
-						children: "Cancelar"
-					}), /* @__PURE__ */ (0, C.jsx)("button", {
-						className: "button danger",
-						onClick: le,
-						children: "Nova partida"
-					})]
-				})
-			]
-		}),
-		c === "celebrate" && T && /* @__PURE__ */ (0, C.jsxs)(se, {
-			onClose: () => u(null),
-			className: "celebration",
-			children: [
-				/* @__PURE__ */ (0, C.jsxs)("div", {
-					className: "celebration-deck",
-					"aria-hidden": "true",
-					children: [
-						/* @__PURE__ */ (0, C.jsx)("span", { children: "♦" }),
-						/* @__PURE__ */ (0, C.jsx)("span", { children: "♠" }),
-						/* @__PURE__ */ (0, C.jsx)("span", { children: "♥" })
-					]
-				}),
-				/* @__PURE__ */ (0, C.jsxs)("h2", {
-					id: "dialog-title",
-					children: [T.name, " venceu!"]
-				}),
-				/* @__PURE__ */ (0, C.jsxs)("p", { children: [
-					"Último na mesa com ",
-					T.score,
-					" pontos."
-				] }),
-				/* @__PURE__ */ (0, C.jsx)("button", {
-					className: "button primary",
+			children: /* @__PURE__ */ (0, C.jsxs)("div", {
+				className: "dialog-actions",
+				children: [/* @__PURE__ */ (0, C.jsx)("button", {
+					className: "button secondary",
 					onClick: () => u(null),
 					autoFocus: !0,
-					children: "Ver placar final"
+					children: "Cancelar"
+				}), /* @__PURE__ */ (0, C.jsx)("button", {
+					className: "button danger",
+					onClick: ue,
+					children: "Nova partida"
+				})]
+			})
+		}),
+		c === "celebrate" && de && /* @__PURE__ */ (0, C.jsx)(te, {
+			title: `${de.name} venceu!`,
+			description: /* @__PURE__ */ (0, C.jsxs)(C.Fragment, { children: [
+				"Último na mesa com ",
+				de.score,
+				" pontos.",
+				!!p?.eliminated.length && /* @__PURE__ */ (0, C.jsxs)("span", {
+					className: "celebration-elimination",
+					children: [/* @__PURE__ */ (0, C.jsx)("span", {
+						className: "result-card result-card-out",
+						"aria-hidden": "true",
+						children: /* @__PURE__ */ (0, C.jsx)("span", { className: "skull-mark" })
+					}), /* @__PURE__ */ (0, C.jsx)("span", { children: ie(p.eliminated) })]
 				})
-			]
+			] }),
+			visual: /* @__PURE__ */ (0, C.jsx)(oe, {}),
+			onClose: () => u(null),
+			className: "celebration",
+			children: /* @__PURE__ */ (0, C.jsx)("button", {
+				className: "button primary",
+				onClick: () => u(null),
+				autoFocus: !0,
+				children: "Ver placar final"
+			})
 		})
 	] });
 }
 //#endregion
 //#region web-source/main.tsx
-var le = document.getElementById("app");
-if (!le) throw Error("O elemento raiz do Pontinho não foi encontrado.");
-(0, u.createRoot)(le).render(/* @__PURE__ */ (0, C.jsx)(ce, {}));
+var de = document.getElementById("app");
+if (!de) throw Error("O elemento raiz do Pontinho não foi encontrado.");
+(0, u.createRoot)(de).render(/* @__PURE__ */ (0, C.jsx)(E, {}));
 //#endregion
