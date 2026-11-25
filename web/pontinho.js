@@ -8264,15 +8264,26 @@ function re({ players: e, round: t, onClose: n, onSave: r }) {
 					}),
 					/* @__PURE__ */ (0, C.jsxs)("div", {
 						className: "loss-progress",
-						children: [/* @__PURE__ */ (0, C.jsx)("span", { children: "Informe a perda de cada adversário" }), /* @__PURE__ */ (0, C.jsxs)("strong", {
-							"aria-live": "polite",
-							"aria-label": `${m} de ${p.length} perdas preenchidas`,
-							children: [
-								m,
-								"/",
-								p.length
-							]
-						})]
+						children: [
+							/* @__PURE__ */ (0, C.jsx)("span", { children: "Informe a perda de cada adversário" }),
+							/* @__PURE__ */ (0, C.jsx)("strong", {
+								"aria-live": "polite",
+								"aria-label": `${m} de ${p.length} perdas preenchidas`,
+								children: /* @__PURE__ */ (0, C.jsxs)("span", {
+									"data-progress": m > 0,
+									children: [
+										m,
+										"/",
+										p.length
+									]
+								}, m)
+							}),
+							/* @__PURE__ */ (0, C.jsx)("span", {
+								className: "loss-meter",
+								"aria-hidden": "true",
+								children: /* @__PURE__ */ (0, C.jsx)("span", { style: { transform: `scaleX(${p.length ? m / p.length : 0})` } })
+							})
+						]
 					}),
 					/* @__PURE__ */ (0, C.jsx)("ul", {
 						className: "loss-list",
@@ -8281,14 +8292,18 @@ function re({ players: e, round: t, onClose: n, onSave: r }) {
 							return /* @__PURE__ */ (0, C.jsxs)("li", {
 								className: "loss-row",
 								"data-state": r ? "error" : n === null ? "empty" : "filled",
+								"data-elimination": n === e.score,
 								children: [/* @__PURE__ */ (0, C.jsxs)("div", {
 									className: "loss-player",
 									children: [/* @__PURE__ */ (0, C.jsx)("label", {
 										htmlFor: `loss-${e.id}`,
 										children: e.name
-									}), /* @__PURE__ */ (0, C.jsx)("small", {
+									}), /* @__PURE__ */ (0, C.jsxs)("small", {
 										id: i,
-										children: r ? `Use de 1 a ${e.score}` : n === e.score ? "Será eliminado" : `${e.score} pts na mesa`
+										children: [/* @__PURE__ */ (0, C.jsx)("span", {
+											className: "loss-check",
+											"aria-hidden": "true"
+										}), r ? `Use de 1 a ${e.score}` : n === e.score ? "Será eliminado" : `${e.score} pts na mesa`]
 									})]
 								}), /* @__PURE__ */ (0, C.jsxs)("div", {
 									className: "loss-control",
@@ -8299,7 +8314,10 @@ function re({ players: e, round: t, onClose: n, onSave: r }) {
 											onClick: () => v(e, -1),
 											disabled: n === null || n <= 1,
 											"aria-label": `Diminuir perda de ${e.name}`,
-											children: "−"
+											children: /* @__PURE__ */ (0, C.jsx)("span", {
+												"aria-hidden": "true",
+												children: "−"
+											})
 										}),
 										/* @__PURE__ */ (0, C.jsx)("input", {
 											id: `loss-${e.id}`,
@@ -8322,7 +8340,10 @@ function re({ players: e, round: t, onClose: n, onSave: r }) {
 											onClick: () => v(e, 1),
 											disabled: n === e.score,
 											"aria-label": `Aumentar perda de ${e.name}`,
-											children: "+"
+											children: /* @__PURE__ */ (0, C.jsx)("span", {
+												"aria-hidden": "true",
+												children: "+"
+											})
 										})
 									]
 								})]
@@ -8605,41 +8626,42 @@ function le({ initialNames: e, onStart: t }) {
 					}),
 					/* @__PURE__ */ (0, C.jsx)("ul", {
 						className: "name-list",
-						children: n.map(({ name: e, id: t }, i) => /* @__PURE__ */ (0, C.jsxs)("li", {
+						children: n.map(({ name: t, id: i }, o) => /* @__PURE__ */ (0, C.jsxs)("li", {
 							className: "name-row",
+							"data-dealt": i >= e.length,
 							children: [
 								/* @__PURE__ */ (0, C.jsx)("span", {
 									className: "name-index",
 									"aria-hidden": "true",
-									children: String(i + 1).padStart(2, "0")
+									children: String(o + 1).padStart(2, "0")
 								}),
 								/* @__PURE__ */ (0, C.jsx)("input", {
 									ref: (e) => {
-										e && a.current === t && (a.current = null, e.focus());
+										e && a.current === i && (a.current = null, e.focus());
 									},
-									"aria-label": `Nome do jogador ${i + 1}`,
-									placeholder: `Nome do jogador ${i + 1}`,
-									value: e,
+									"aria-label": `Nome do jogador ${o + 1}`,
+									placeholder: `Nome do jogador ${o + 1}`,
+									value: t,
 									maxLength: 20,
 									autoCapitalize: "words",
 									autoComplete: "off",
 									onChange: (e) => {
-										let n = e.target.value;
-										r((e) => e.map((e) => e.id === t ? {
+										let t = e.target.value;
+										r((e) => e.map((e) => e.id === i ? {
 											...e,
-											name: n
+											name: t
 										} : e));
 									}
 								}),
 								n.length > 2 && /* @__PURE__ */ (0, C.jsx)("button", {
 									type: "button",
 									className: "icon-button remove-player",
-									"aria-label": `Remover ${e.trim() || `jogador ${i + 1}`}`,
-									onClick: () => r(n.filter((e) => e.id !== t)),
+									"aria-label": `Remover ${t.trim() || `jogador ${o + 1}`}`,
+									onClick: () => r(n.filter((e) => e.id !== i)),
 									children: "×"
 								})
 							]
-						}, t))
+						}, i))
 					}),
 					n.length < 10 && /* @__PURE__ */ (0, C.jsxs)("button", {
 						className: "button add-player",
@@ -8662,11 +8684,12 @@ function le({ initialNames: e, onStart: t }) {
 }
 //#endregion
 //#region app/scoreboard.tsx
-function ue({ player: e, isLeader: t }) {
+function ue({ player: e, isLeader: t, lost: n = 0 }) {
 	return /* @__PURE__ */ (0, C.jsxs)("li", {
 		className: "score-row",
 		"data-out": !e.active,
 		"data-leader": t,
+		"data-changed": n > 0,
 		children: [
 			/* @__PURE__ */ (0, C.jsx)("span", {
 				className: "player-initial",
@@ -8685,7 +8708,10 @@ function ue({ player: e, isLeader: t }) {
 					e.active && /* @__PURE__ */ (0, C.jsx)("span", {
 						className: "score-track",
 						"aria-hidden": "true",
-						children: /* @__PURE__ */ (0, C.jsx)("span", { style: { width: `${e.score / 100 * 100}%` } })
+						children: /* @__PURE__ */ (0, C.jsx)("span", { style: {
+							"--score-start": (e.score + n) / 100,
+							"--score-end": e.score / 100
+						} })
 					})
 				]
 			}),
@@ -8697,7 +8723,7 @@ function ue({ player: e, isLeader: t }) {
 	});
 }
 function T({ game: e, roundResult: t, focusAction: n, onRound: r, onReset: i, onUndo: a, onCelebrate: o }) {
-	let s = e.players.filter((e) => e.active).sort((e, t) => t.score - e.score), c = e.players.filter((e) => !e.active), u = e.finished ? s[0] : void 0, d = v(e), f = e.rounds.length + +!e.finished, p = e.rounds.at(-1), m = e.players.find(({ id: e }) => e === p?.winnerId);
+	let s = e.players.filter((e) => e.active).sort((e, t) => t.score - e.score), c = e.players.filter((e) => !e.active), u = e.finished ? s[0] : void 0, d = v(e), f = e.rounds.length + +!e.finished, p = e.rounds.at(-1), m = e.players.find(({ id: e }) => e === p?.winnerId), h = t ? p?.losses : void 0;
 	return (0, l.useEffect)(() => {
 		n && document.getElementById("score-title")?.focus({ preventScroll: !0 });
 	}, [n]), /* @__PURE__ */ (0, C.jsxs)("main", {
@@ -8770,7 +8796,8 @@ function T({ game: e, roundResult: t, focusAction: n, onRound: r, onReset: i, on
 					className: "score-list",
 					children: s.map((e) => /* @__PURE__ */ (0, C.jsx)(ue, {
 						player: e,
-						isLeader: d?.id === e.id
+						isLeader: d?.id === e.id,
+						lost: h?.[e.id]
 					}, e.id))
 				})]
 			}),
@@ -8790,7 +8817,8 @@ function T({ game: e, roundResult: t, focusAction: n, onRound: r, onReset: i, on
 					className: "score-list",
 					children: c.map((e) => /* @__PURE__ */ (0, C.jsx)(ue, {
 						player: e,
-						isLeader: !1
+						isLeader: !1,
+						lost: h?.[e.id]
 					}, e.id))
 				})]
 			}),

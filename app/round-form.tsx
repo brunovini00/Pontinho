@@ -83,7 +83,12 @@ export default function RoundForm({ players, round, onClose, onSave }: {
             </div>
             <div className="loss-progress">
               <span>Informe a perda de cada adversário</span>
-              <strong aria-live="polite" aria-label={`${complete} de ${others.length} perdas preenchidas`}>{complete}/{others.length}</strong>
+              <strong aria-live="polite" aria-label={`${complete} de ${others.length} perdas preenchidas`}>
+                <span key={complete} data-progress={complete > 0}>{complete}/{others.length}</span>
+              </strong>
+              <span className="loss-meter" aria-hidden="true">
+                <span style={{ transform: `scaleX(${others.length ? complete / others.length : 0})` }} />
+              </span>
             </div>
             <ul className="loss-list">
               {others.map((player) => {
@@ -92,13 +97,21 @@ export default function RoundForm({ players, round, onClose, onSave }: {
                 const invalid = Boolean(value) && parsed === null;
                 const hintId = `loss-hint-${player.id}`;
                 return (
-                  <li className="loss-row" key={player.id} data-state={invalid ? "error" : parsed !== null ? "filled" : "empty"}>
+                  <li
+                    className="loss-row"
+                    key={player.id}
+                    data-state={invalid ? "error" : parsed === null ? "empty" : "filled"}
+                    data-elimination={parsed === player.score}
+                  >
                     <div className="loss-player">
                       <label htmlFor={`loss-${player.id}`}>{player.name}</label>
-                      <small id={hintId}>{invalid ? `Use de 1 a ${player.score}` : parsed === player.score ? "Será eliminado" : `${player.score} pts na mesa`}</small>
+                      <small id={hintId}>
+                        <span className="loss-check" aria-hidden="true" />
+                        {invalid ? `Use de 1 a ${player.score}` : parsed === player.score ? "Será eliminado" : `${player.score} pts na mesa`}
+                      </small>
                     </div>
                     <div className="loss-control">
-                      <button type="button" className="step-button" onClick={() => adjust(player, -1)} disabled={parsed === null || parsed <= 1} aria-label={`Diminuir perda de ${player.name}`}>−</button>
+                      <button type="button" className="step-button" onClick={() => adjust(player, -1)} disabled={parsed === null || parsed <= 1} aria-label={`Diminuir perda de ${player.name}`}><span aria-hidden="true">−</span></button>
                       <input
                         id={`loss-${player.id}`}
                         type="text"
@@ -114,7 +127,7 @@ export default function RoundForm({ players, round, onClose, onSave }: {
                         onFocus={(event) => event.currentTarget.select()}
                         onChange={(event) => updateLoss(player.id, event.target.value)}
                       />
-                      <button type="button" className="step-button" onClick={() => adjust(player, 1)} disabled={parsed === player.score} aria-label={`Aumentar perda de ${player.name}`}>+</button>
+                      <button type="button" className="step-button" onClick={() => adjust(player, 1)} disabled={parsed === player.score} aria-label={`Aumentar perda de ${player.name}`}><span aria-hidden="true">+</span></button>
                     </div>
                   </li>
                 );

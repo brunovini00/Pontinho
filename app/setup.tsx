@@ -52,7 +52,7 @@ export default function Setup({ initialNames, onStart }: {
         </div>
         <ul className="name-list">
           {names.map(({ name, id }, index) => (
-            <li className="name-row" key={id}>
+            <li className="name-row" key={id} data-dealt={id >= initialNames.length}>
               <span className="name-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
               <input
                 ref={(input) => {

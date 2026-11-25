@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import type { CSSProperties } from "react";
 import { getLeader, INITIAL_POINTS } from "./game";
 import type { Game, Player } from "./game";
 import RoundHistory from "./round-history";
@@ -15,9 +16,9 @@ type Props = {
   onCelebrate: () => void;
 };
 
-function PlayerRow({ player, isLeader }: { player: Player; isLeader: boolean }) {
+function PlayerRow({ player, isLeader, lost = 0 }: { player: Player; isLeader: boolean; lost?: number }) {
   return (
-    <li className="score-row" data-out={!player.active} data-leader={isLeader}>
+    <li className="score-row" data-out={!player.active} data-leader={isLeader} data-changed={lost > 0}>
       <span className="player-initial" aria-hidden="true">
         {player.active ? player.name[0]?.toLocaleUpperCase("pt-BR") : <span className="skull-mark" />}
       </span>
@@ -27,7 +28,10 @@ function PlayerRow({ player, isLeader }: { player: Player; isLeader: boolean }) 
         {isLeader && <small className="leader-label">Líder</small>}
         {player.active && (
           <span className="score-track" aria-hidden="true">
-            <span style={{ width: `${player.score / INITIAL_POINTS * 100}%` }} />
+            <span style={{
+              "--score-start": (player.score + lost) / INITIAL_POINTS,
+              "--score-end": player.score / INITIAL_POINTS,
+            } as CSSProperties} />
           </span>
         )}
       </div>
@@ -44,6 +48,7 @@ export default function Scoreboard({ game, roundResult, focusAction, onRound, on
   const roundNumber = game.rounds.length + (game.finished ? 0 : 1);
   const last = game.rounds.at(-1);
   const lastWinner = game.players.find(({ id }) => id === last?.winnerId);
+  const latestLosses = roundResult ? last?.losses : undefined;
 
   useEffect(() => {
     if (focusAction) document.getElementById("score-title")?.focus({ preventScroll: true });
@@ -80,13 +85,15 @@ export default function Scoreboard({ game, roundResult, focusAction, onRound, on
           <strong className="count">{active.length}/{game.players.length}</strong>
         </div>
         <ul className="score-list">
-          {active.map((player) => <PlayerRow key={player.id} player={player} isLeader={leader?.id === player.id} />)}
+          {active.map((player) => <PlayerRow key={player.id} player={player} isLeader={leader?.id === player.id} lost={latestLosses?.[player.id]} />)}
         </ul>
       </section>
       {out.length > 0 && (
         <section className="score-section eliminated-section" aria-labelledby="out-title">
           <div className="section-heading"><h2 id="out-title">Eliminados</h2><strong className="count">{out.length}</strong></div>
-          <ul className="score-list">{out.map((player) => <PlayerRow key={player.id} player={player} isLeader={false} />)}</ul>
+          <ul className="score-list">
+            {out.map((player) => <PlayerRow key={player.id} player={player} isLeader={false} lost={latestLosses?.[player.id]} />)}
+          </ul>
         </section>
       )}
       <RoundHistory game={game} onUndo={onUndo} />
